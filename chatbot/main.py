@@ -143,12 +143,12 @@ def send_to_space(emotion):
 def save_chat_logs(gd, bd):
     """Save chat logs to appropriate directories."""
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    good_log = f"logs/good/good_logs_{timestamp}.txt"
-    bad_log = f"logs/bad/bad_logs_{timestamp}.txt"
+    good_log = f"/logs/good/good_logs_{timestamp}.txt"
+    bad_log = f"/logs/bad/bad_logs_{timestamp}.txt"
 
     try:
-        os.makedirs("logs/good", exist_ok=True)
-        os.makedirs("logs/bad", exist_ok=True)
+        os.makedirs("/logs/good", exist_ok=True)
+        os.makedirs("/logs/bad", exist_ok=True)
         with open(good_log, 'w', encoding='utf-8') as good_file:
             good_file.writelines(f"{entry}\n" for entry in gd)
             good_file.write("END_OF_DIALOG")
@@ -162,14 +162,14 @@ def load_chat_logs():
     """Load previous chat logs."""
     good_log, bad_log = [], []
 
-    if os.path.exists("logs/good"):
-        for file in os.listdir("logs/good"):
-            with open(f"logs/good/{file}", 'r', encoding='utf-8') as f:
+    if os.path.exists("/logs/good"):
+        for file in os.listdir("/logs/good"):
+            with open(f"/logs/good/{file}", 'r', encoding='utf-8') as f:
                 good_log.extend(line.strip() for line in f)
 
-    if os.path.exists("logs/bad"):
-        for file in os.listdir("logs/bad"):
-            with open(f"logs/bad/{file}", 'r', encoding='utf-8') as f:
+    if os.path.exists("/logs/bad"):
+        for file in os.listdir("/logs/bad"):
+            with open(f"/logs/bad/{file}", 'r', encoding='utf-8') as f:
                 bad_log.extend(line.strip() for line in f)
 
     return good_log, bad_log
