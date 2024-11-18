@@ -2,6 +2,7 @@
 # DreamConnect
 
 DreamConnect is a project from Sigmalogy that allows everyone to finally connect with their own waifu.
+We are planning to use OpenAI GPT-4 in the future but for now we use a library called [g4f](https://github.com/techwithanirudh/g4f)
 
 
 ## Authors
