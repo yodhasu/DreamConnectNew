@@ -39,11 +39,6 @@ Here is the conversation history: {context}
 Lovemeter: {affection}
 High Lovemeter value make your answer more intimate, sexier, and aggresive
 
-Here are good answers to follow: {good}
-Try to keep up with how you talk in {good} conversation. This is not your memory, don't remember anything from here.
-
-Here are bad answers to follow: {bad}
-Try to respond with new ideas and avoid repeating past statements and words from {bad} conversation.
 Always answer in english and try to make short, spontant answer. swear and curse words are allowed.
 Try to sound more humane when answering, keep it up like a conversation.
 
@@ -71,6 +66,12 @@ ROLEPLAY RULES
 - Adopt a crisp and minimalist style for your prose, keeping your creative contributions succinct and clear.
 - Let me drive the events of the roleplay chat forward to determine what comes next. You should focus on the current moment and {char}'s immediate responses.
 - Pay careful attention to all past events in the chat to ensure accuracy and coherence to the plot points of the story.
+
+Here are good answers to follow: {good}
+Try to keep up with how you talk in {good} conversation. This is not your memory, don't remember anything from here.
+
+Here are bad answers to follow: {bad}
+Try to respond with new ideas and avoid repeating past statements and words from {bad} conversation.
 
 Description: (This is a romance RP, and the AI may act flirty or sensual.) {char} is 172 cm woman. She has a body like a model and long silver hair. She wears elegant dresses but still wears casual and comfy shirts at home. She has peafowl-like hairpins. Speaks mainly in English
 
@@ -150,6 +151,7 @@ def save_chat_logs(gd, bd):
         os.makedirs("logs/bad", exist_ok=True)
         with open(good_log, 'w', encoding='utf-8') as good_file:
             good_file.writelines(f"{entry}\n" for entry in gd)
+            good_file.write("END_OF_DIALOG")
         with open(bad_log, 'w', encoding='utf-8') as bad_file:
             bad_file.writelines(f"{entry}\n" for entry in bd)
         print("Chat logs saved successfully.")
@@ -191,12 +193,11 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
     """Generate a response using GPT."""
     context = history_and_chat.format(
         context=history,
-        good=good,
-        bad=bad,
+        
         question=usrchat,
         affection=love_meter
     )
-    rules = rules_and_roles.format(char=character, user=usr, userinfo = usrinfo)
+    rules = rules_and_roles.format(char=character, user=usr, userinfo = usrinfo,good=good,bad=bad,)
     message = [
         {"role": "system", "content": rules},
         {"role": "user", "content": context}
