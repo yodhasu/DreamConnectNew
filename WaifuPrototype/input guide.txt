@@ -1,0 +1,21 @@
+1 = 
+4 = attracted
+5 = hated
+6 = sad
+7 = anxious
+8 = happy
+
+combination
+
+1 + 4 = blush < 3
+3 + 5 = apathetic
+1 + 8 = happy < 3 or surprise
+1 + 8 + 4 = lustful
+
+default = -
+
+She had a very happy childhood. They've had a very happy marriage. I was glad the movie had a happy ending. We are so happy that you were able to come to the party.
+
+He's feeling sad because his pet died. People were sad that he was leaving. The experience left her sadder but wiser.
+
+She is attracted to short men. I was attracted by her bright blue eyes. I felt very attracted to her.
