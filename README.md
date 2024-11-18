@@ -51,9 +51,28 @@ Add your desired model there.
 
 To use/change the model got to DreamConnect/pixi_live2d_project/js and modify the model directory
 
-```js
+```javascript
 const modeldir = "your_model_dirrectory";
 ```
 
 ## Customize Character
 To customize the Character simply just playaround with the chatbot's prompt and parameters
+
+## Chat Guide
+
+Asterisk (*) are used to mark condition, situation, action, basically for narrative function. Use it for better experience
+
+```bash
+  User: *emotion* Dialogue
+  Character: *emotion* Dialogue
+```
+
+```bash
+  User: *action* Dialogue
+  Character: *action* Dialogue
+```
+
+```bash
+  User: *situation detail* Dialogue
+  Character: *situation detail* Dialogue
+```
