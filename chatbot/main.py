@@ -7,7 +7,7 @@ from transformers import pipeline
 import requests
 from nltk import sent_tokenize
 from g4f.client import Client
-
+from voice_cloner.cloner import VoiceCloner as vc
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -19,7 +19,17 @@ load_dotenv()
 #     api_key="os.getenv("OPENAI_API_KEY")" # Punya Delvin
 # )
 
+# add timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# Initialize the VoiceCloner library
+cloner = vc(character_dir="chatbot/voiceCloner/voice/Character")
+# Initialize the TTS and Cloner models
+cloner.initialize_tts(tts_model="tts_models/it/mai_female/vits")
+cloner.initialize_cloner(cloner_model="tts_models/en/ljspeech/tacotron2-DDC")
+output_path = f"chatbot/voiceCloner/voice/Output/March{timestamp}.wav"
 # Initialize client and classifier
+
 client = Client()
 try:
     classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None, device=0)
@@ -142,7 +152,7 @@ def send_to_space(emotion):
 
 def save_chat_logs(gd, bd):
     """Save chat logs to appropriate directories."""
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    
     good_log = f"/logs/good/good_logs_{timestamp}.txt"
     bad_log = f"/logs/bad/bad_logs_{timestamp}.txt"
 
@@ -204,6 +214,7 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
     ]
     while True:  # Retry logic for generating responses
         try:
+            print("Generating response...")
             response = client.chat.completions.create(
                 model='gpt-4o',
                 messages=message,
@@ -212,6 +223,9 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
                 max_completion_tokens=64,
                 presence_penalty=1.7
             )
+            print("Generating voice line...")
+            vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
+            cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Error generating response: {e}")
