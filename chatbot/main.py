@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 import os
 import speech_recognition as sr
 import keyboard
+import shutil
 
 load_dotenv()
 
@@ -316,7 +317,24 @@ def interactive_chat():
         context += f"\nUser: {user_message}\n{character}: {response}"
         starting = False
 
+def clear_directory(directory_path):
+    # Make sure the directory exists
+    if os.path.exists(directory_path) and os.path.isdir(directory_path):
+        # Iterate over all items in the directory
+        for item in os.listdir(directory_path):
+            item_path = os.path.join(directory_path, item)
+            # Remove file or directory
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)  # Delete subdirectory and its contents
+            else:
+                os.remove(item_path)  # Delete file
+        print(f"All contents of {directory_path} have been cleared.")
+    else:
+        print(f"The directory {directory_path} does not exist.")
+
+
 # Run the chat application
 if __name__ == "__main__":
+    clear_directory("voiceCloner/voice/Output")
     os.system('cls')
     interactive_chat()
