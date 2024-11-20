@@ -246,7 +246,7 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
             try:
                 vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
                 # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-                elevenlabs.text_to_audio(vctext)
+                # elevenlabs.text_to_audio(vctext)
             except ValueError:
                 cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
             except Exception as e:

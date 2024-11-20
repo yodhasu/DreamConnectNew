@@ -65,7 +65,7 @@ def get_audio():
     # Assuming the audio file is stored in the same directory as the Flask app
     # audio_path = os.path.join(app.root_path, "\speech.mp3")
     # print(audio_path)
-    audio_path = get_latest_file("../chatbot/voiceCloner/voice/Output")
+    audio_path = get_latest_file("../../chatbot/voiceCloner/voice/Output")
     return send_file(audio_path, mimetype='audio/mpeg')
 
 @app.route('/send_message', methods=['POST'])

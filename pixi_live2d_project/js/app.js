@@ -10,7 +10,7 @@ document.getElementById('startButton').addEventListener('click', async () => {
         autoStart: true,
         resizeTo: window
     });
-    // app.stage.eventMode = 'passive';
+
     // Function to initialize and setup the socket
     const setupSocket = () => {
         const socket = io('http://127.0.0.1:8080');
@@ -24,15 +24,20 @@ document.getElementById('startButton').addEventListener('click', async () => {
             window.location.reload();
         });
 
-        socket.on('model_action', (data) => {
+        socket.on('model_action', async (data) => {
             const command = data.action.trim();
             console.log("Message from server:", command);
-            model.stopMotions()
+
+            // Stop previous actions and set neutral expression
+            model.stopMotions();
             model.expression('neutral');
             model.motion('neutral');
             model.internalModel.motionManager.expressionManager.restoreExpression();
-            model.expression(command);
-            playAudio(); // Play audio after connection
+
+            // Set new expression
+            await model.expression(command);
+            await playAudio(); // Play audio after setting the expression
+
             console.log("Expression:", command);
         });
 
@@ -42,14 +47,18 @@ document.getElementById('startButton').addEventListener('click', async () => {
     };
 
     // Function to play audio, only callable after user interaction
-    const playAudio = () => {
+    const playAudio = async () => {
         const audioLink = 'http://127.0.0.1:8080/audio';
-        model.speak(audioLink, {
-            volume: 1.3,
-            crossOrigin: "anonymous",
-            onFinish: () => { console.log("Voiceline is over"); },
-            onError: (err) => { console.log("Error: " + err); }
-        });
+        try {
+            await model.speak(audioLink, {
+                volume: 1.3,
+                crossOrigin: "anonymous",
+                onFinish: () => { console.log("Voiceline is over"); },
+                onError: (err) => { console.log("Error: " + err); }
+            });
+        } catch (err) {
+            console.error("Error while trying to speak:", err);
+        }
     };
 
     // Load the Live2D model
@@ -64,8 +73,6 @@ document.getElementById('startButton').addEventListener('click', async () => {
     model.scale.set(0.1, 0.1);
     model.position.set(window.innerWidth / 4, window.innerHeight / 2);
     model.focus(0, 0, true);
-    // model.stage.eventMode = 'active'
-    // model.lookAt(app.screen.width / 2, app.screen.height / 2);
 
     // Call setupSocket to connect to server
     setupSocket();
