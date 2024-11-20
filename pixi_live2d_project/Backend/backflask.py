@@ -63,7 +63,9 @@ def index():
 @app.route('/audio')
 def get_audio():
     # Assuming the audio file is stored in the same directory as the Flask app
-    audio_path = os.path.join(app.root_path, "audio\speech.mp3")
+    # audio_path = os.path.join(app.root_path, "\speech.mp3")
+    # print(audio_path)
+    audio_path = get_latest_file("../chatbot/voiceCloner/voice/Output")
     return send_file(audio_path, mimetype='audio/mpeg')
 
 @app.route('/send_message', methods=['POST'])
@@ -95,7 +97,20 @@ def handle_connect():
 @socketio.on('disconnect')
 def handle_disconnect():
     print("Client disconnected")
+
+def get_latest_file(directory):
+    # List all files in the directory
+    files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     
+    # If the directory is empty, return None
+    if not files:
+        return None
+    
+    # Get the full path of the files and sort by modification time
+    latest_file = max(files, key=lambda f: os.path.getmtime(os.path.join(directory, f)))
+    
+    # Return the full path of the latest file
+    return os.path.join(directory, latest_file)
 
 if __name__ == '__main__':
     socketio.run(app, host='127.0.0.1', port=8080)
