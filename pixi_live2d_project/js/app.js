@@ -45,7 +45,7 @@ document.getElementById('startButton').addEventListener('click', async () => {
     const playAudio = () => {
         const audioLink = 'http://127.0.0.1:8080/audio';
         model.speak(audioLink, {
-            volume: 1,
+            volume: 1.3,
             crossOrigin: "anonymous",
             onFinish: () => { console.log("Voiceline is over"); },
             onError: (err) => { console.log("Error: " + err); }
