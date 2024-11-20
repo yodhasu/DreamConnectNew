@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="chatbot-cli",
-    version="0.1",
+    version="0.5",
     py_modules=["main"],
     install_requires=[
         "typer",
@@ -12,6 +12,8 @@ setup(
         "pandas",
         "flask",
         "g4f",
+        "keyboard",
+        "coqui-tts",
         "tensorflow" # Add other dependencies here
     ],
     python_requires="==3.10.*",

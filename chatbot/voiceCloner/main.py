@@ -5,7 +5,7 @@ from TTS.api import TTS
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
-chardir = "voice/Character/"
+chardir = "voiceCloner/voice/Character/"
 char = "March"
 lang = "en"
 charvoice = f"{char}_{lang}.wav"
@@ -34,4 +34,4 @@ charvoice = "voice/Character/VO_JA_Archive_March_7th_1.wav"
 # cloner = TTS("tts_models/en/ljspeech/tacotron2-DDC", progress_bar=True).to(device)
 
 cloner = TTS("tts_models/en/ljspeech/tacotron2-DDC", progress_bar=True).to(device)
-cloner.tts_with_vc_to_file(text=text, speaker_wav = ref_clips, file_path= "voice/Output/March1.wav")
+cloner.tts_with_vc_to_file(text=text, speaker_wav = ref_clips, file_path= "voiceCloner/voice/Output/March1.wav")

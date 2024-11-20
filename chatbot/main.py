@@ -7,30 +7,44 @@ from transformers import pipeline
 import requests
 from nltk import sent_tokenize
 from g4f.client import Client
-
+from voice_cloner.cloner import VoiceCloner as vc
+from voiceCloner.elevenlabs import ElevenLabsTTS as elvtts
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import speech_recognition as sr
+import keyboard
 
 load_dotenv()
 
 # client = OpenAI(
-#     api_key="os.getenv("OPENAI_API_KEY")" # Punya Delvin
+#     api_key=os.getenv("OPENAI_API_KEY") # Punya Delvin
 # )
 
+# add timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+# Initialize the VoiceCloner library
+cloner = vc(character_dir="voiceCloner/voice/Character")
+elevenlabs = elvtts()
+# Initialize the TTS and Cloner models
+cloner.initialize_tts(tts_model="tts_models/it/mai_female/vits")
+cloner.initialize_cloner(cloner_model="tts_models/en/ljspeech/tacotron2-DDC")
+output_path = f"voiceCloner/voice/Output/March{timestamp}.wav"
 # Initialize client and classifier
+
 client = Client()
 try:
     classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None, device=0)
 except:
     classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None)
 
-# Default parameters
+# Variables
 character = "March 7th"
 usrbio = ""
 emo = []
-
+r = sr.Recognizer()
 # Templates for prompts
 history_and_chat = """
 Here is the conversation history: {context}
@@ -127,6 +141,18 @@ Current role assignment: I want you to act as {char}. You don't know about AI or
 
 
 # Utility functions
+def open_mic():
+    with sr.Microphone() as source:
+        try:
+            # using google speech recognition
+            r.adjust_for_ambient_noise(source)
+            print('Listen...Ask...Now')
+            audioin = r.listen(source)
+            my_text = r.recognize_google(audioin)
+            return my_text
+        except:
+            print("Sorry, I did not get that")
+
 def send_to_space(emotion):
     """Send classified emotions to the backend."""
     data = {'response': emotion}
@@ -142,13 +168,13 @@ def send_to_space(emotion):
 
 def save_chat_logs(gd, bd):
     """Save chat logs to appropriate directories."""
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    good_log = f"/logs/good/good_logs_{timestamp}.txt"
-    bad_log = f"/logs/bad/bad_logs_{timestamp}.txt"
+    
+    good_log = f"logs/good/good_logs_{timestamp}.txt"
+    bad_log = f"logs/bad/bad_logs_{timestamp}.txt"
 
     try:
-        os.makedirs("/logs/good", exist_ok=True)
-        os.makedirs("/logs/bad", exist_ok=True)
+        os.makedirs("logs/good", exist_ok=True)
+        os.makedirs("logs/bad", exist_ok=True)
         with open(good_log, 'w', encoding='utf-8') as good_file:
             good_file.writelines(f"{entry}\n" for entry in gd)
             good_file.write("END_OF_DIALOG")
@@ -162,14 +188,14 @@ def load_chat_logs():
     """Load previous chat logs."""
     good_log, bad_log = [], []
 
-    if os.path.exists("/logs/good"):
-        for file in os.listdir("/logs/good"):
-            with open(f"/logs/good/{file}", 'r', encoding='utf-8') as f:
+    if os.path.exists("logs/good"):
+        for file in os.listdir("logs/good"):
+            with open(f"logs/good/{file}", 'r', encoding='utf-8') as f:
                 good_log.extend(line.strip() for line in f)
 
-    if os.path.exists("/logs/bad"):
-        for file in os.listdir("/logs/bad"):
-            with open(f"/logs/bad/{file}", 'r', encoding='utf-8') as f:
+    if os.path.exists("logs/bad"):
+        for file in os.listdir("logs/bad"):
+            with open(f"logs/bad/{file}", 'r', encoding='utf-8') as f:
                 bad_log.extend(line.strip() for line in f)
 
     return good_log, bad_log
@@ -189,6 +215,9 @@ def get_time_of_day():
     else:
         return "night"
 
+
+
+# Using gpt to generate response
 def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
     """Generate a response using GPT."""
     context = history_and_chat.format(
@@ -204,14 +233,24 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
     ]
     while True:  # Retry logic for generating responses
         try:
+            print("Generating response...")
             response = client.chat.completions.create(
                 model='gpt-4o',
                 messages=message,
-                temperature=1.85,
+                temperature=1.85,# use under 1.0 for gpt
                 frequency_penalty=1.7,
                 max_completion_tokens=64,
                 presence_penalty=1.7
             )
+            print("Generating voice line...")
+            try:
+                vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
+                # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+                # elevenlabs.text_to_audio(vctext)
+            except ValueError:
+                cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            except Exception as e:
+                print(f"Error generating voice line with error {e}")
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Error generating response: {e}")
@@ -240,10 +279,17 @@ def interactive_chat():
         else:
             context.replace("This is a new chat. Previous topic and chats are irrelevant but you can mimic how you talk previously.", "")
 
-        user_message = input("You: ")
+        user_message = input("You (/mic to use microphone input): ")
         if user_message.lower() == "/exit":
             save_chat_logs(temp_good_logs, temp_bad_logs)
             return
+        if user_message.lower() == "/mic":
+            try:
+                user_message = open_mic()
+                print("You:", user_message)
+            except:
+                print("Can't hear voice")
+                continue
         while True:
             response = generate_response(name, usrbio, context, good_logs, bad_logs, user_message, love_meter)
             emotions = classify_emotion(response)

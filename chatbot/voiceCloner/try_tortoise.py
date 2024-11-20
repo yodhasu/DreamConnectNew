@@ -3,8 +3,8 @@ import os
 
 import tortoise.api as api
 import tortoise.utils as utils
-
-chardir = "voice/Character/"
+# voiceCloner\voice\Character\March_jp.wav
+chardir = "voiceCloner/voice/Character/"
 char = "March"
 lang = "jp"
 charvoice = f"{char}_{lang}.wav"
