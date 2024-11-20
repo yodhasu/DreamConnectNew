@@ -8,6 +8,7 @@ import requests
 from nltk import sent_tokenize
 from g4f.client import Client
 from voice_cloner.cloner import VoiceCloner as vc
+from voiceCloner.elevenlabs import ElevenLabsTTS as elvtts
 import openai
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -26,6 +27,7 @@ timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 # Initialize the VoiceCloner library
 cloner = vc(character_dir="voiceCloner/voice/Character")
+elevenlabs = elvtts()
 # Initialize the TTS and Cloner models
 cloner.initialize_tts(tts_model="tts_models/it/mai_female/vits")
 cloner.initialize_cloner(cloner_model="tts_models/en/ljspeech/tacotron2-DDC")
@@ -241,8 +243,14 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
                 presence_penalty=1.7
             )
             print("Generating voice line...")
-            vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
-            cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            try:
+                vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
+                # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+                elevenlabs.text_to_audio(vctext)
+            except ValueError:
+                cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            except Exception as e:
+                print(f"Error generating voice line with error {e}")
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Error generating response: {e}")
