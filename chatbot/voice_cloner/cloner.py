@@ -91,7 +91,9 @@ class VoiceCloner:
         text = text.replace("’", "'").replace("“", '"').replace("”", '"')
         # Remove any remaining unsupported characters
         text = re.sub(r'[^\x00-\x7F]+', '', text)  # Keep only ASCII characters
-        return text
+        text = re.sub(r"\*.*?\*", "", text) # Remove text between asterisks
+        result = " ".join(text.split())
+        return result
     
     @staticmethod
     def list_available_models():
