@@ -1,7 +1,4 @@
-import os
 import time
-import warnings
-import logging
 from datetime import datetime
 from transformers import pipeline
 import requests
@@ -17,6 +14,9 @@ import speech_recognition as sr
 import keyboard
 import shutil
 import pygame
+import ollama
+from langchain_ollama import OllamaLLM
+from langchain_ollama import ChatOllama
 
 load_dotenv()
 # Initialize pygame mixer
@@ -244,7 +244,51 @@ def get_time_of_day():
     else:
         return "night"
 
+# Generate response using Ollama
 
+chat_model = ChatOllama(
+    model="llama3",  # Replace with the appropriate model name
+    temperature=0.85,  # Control randomness
+    frequency_penalty=1.7,  # Penalize frequent token repetition
+    presence_penalty=1.7,  # Encourage topic diversity
+    max_tokens=64  # Limit the length of the response
+)
+
+def generate_response_ollama(usr, usrinfo, history, good, bad, usrchat, love_meter):
+    """Generate a response using GPT."""
+    context = history_and_chat.format(
+        context=history,
+        question=usrchat,
+        affection=love_meter
+    )
+    rules = rules_and_roles.format(char=character, user=usr, userinfo = usrinfo,good=good,bad=bad,)
+    message = [
+        {"role": "system", "content": rules},
+        {"role": "user", "content": context}
+    ]
+    while True:  # Retry logic for generating responses
+        try:
+            print("Generating response...")
+            # response = chat_model(message)
+            response = chat_model.invoke(message)
+            print("Generating voice line...")
+            # vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
+            # try:
+            #     # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            #     clear_directory("voiceCloner/voice/Output")
+            #     elevenlabs.text_to_audio(response.choices[0].message.content.strip())
+                
+                
+            # except ValueError:
+            #     cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            # except Exception as e:
+            #     print(f"Error generating voice line with error {e}")
+            
+            # play_audio("voiceCloner/voice/Output/March.mp3")
+            return response.content.strip()
+        except Exception as e:
+            print(f"Error generating response: {e}")
+            time.sleep(1)
 
 # Using gpt to generate response
 def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
@@ -273,16 +317,16 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
             )
             print("Generating voice line...")
             # vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
-            try:
-                # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-                clear_directory("voiceCloner/voice/Output")
-                elevenlabs.text_to_audio(response.choices[0].message.content.strip())
+            # try:
+            #     # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+            clear_directory("voiceCloner/voice/Output")
+            #     elevenlabs.text_to_audio(response.choices[0].message.content.strip())
                 
                 
             # except ValueError:
             #     cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-            except Exception as e:
-                print(f"Error generating voice line with error {e}")
+            # except Exception as e:
+            #     print(f"Error generating voice line with error {e}")
             
             # play_audio("voiceCloner/voice/Output/March.mp3")
             return response.choices[0].message.content.strip()
@@ -325,13 +369,15 @@ def interactive_chat():
                 print("Can't hear voice")
                 continue
         while True:
-            response = generate_response(name, usrbio, context, good_logs, bad_logs, user_message, love_meter)
+            response = generate_response_ollama(name, usrbio, context, good_logs, bad_logs, user_message, love_meter)
             emotions = classify_emotion(response)
             send_to_space(emotions)
 
             print(f"\n{character}: {response}\n")
-            
-            play_audio("voiceCloner/voice/Output/March.mp3")
+            try:
+                play_audio("voiceCloner/voice/Output/March.mp3")
+            except:
+                pass
             feedback = input("Satisfied with the response? (y/n/exit): ").lower()
 
             if feedback == "y":
