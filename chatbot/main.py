@@ -7,7 +7,7 @@ from transformers import pipeline
 import requests
 from nltk import sent_tokenize
 from g4f.client import Client
-from voice_cloner.cloner import VoiceCloner as vc
+# from voice_cloner.cloner import VoiceCloner as vc
 from voiceCloner.elevenlabs import ElevenLabsTTS as elvtts
 import openai
 from openai import OpenAI
@@ -16,26 +16,28 @@ import os
 import speech_recognition as sr
 import keyboard
 import shutil
+import pygame
 
 load_dotenv()
-
-# client = OpenAI(
-#     api_key=os.getenv("OPENAI_API_KEY") # Punya Delvin
-# )
+# Initialize pygame mixer
+pygame.mixer.init()
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY") # Punya Delvin
+)
 
 # add timestamp
 timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 # Initialize the VoiceCloner library
-cloner = vc(character_dir="voiceCloner/voice/Character")
+# cloner = vc(character_dir="voiceCloner/voice/Character")
 elevenlabs = elvtts()
-# Initialize the TTS and Cloner models
-cloner.initialize_tts(tts_model="tts_models/it/mai_female/vits")
-cloner.initialize_cloner(cloner_model="tts_models/en/ljspeech/tacotron2-DDC")
+# # Initialize the TTS and Cloner models
+# cloner.initialize_tts(tts_model="tts_models/it/mai_female/vits")
+# cloner.initialize_cloner(cloner_model="tts_models/en/ljspeech/tacotron2-DDC")
 output_path = f"voiceCloner/voice/Output/March{timestamp}.wav"
 # Initialize client and classifier
 
-client = Client()
+# client = Client()
 try:
     classifier = pipeline(task="text-classification", model="SamLowe/roberta-base-go_emotions", top_k=None, device=0)
 except:
@@ -88,7 +90,7 @@ Try to keep up with how you talk in {good} conversation. This is not your memory
 Here are bad answers to follow: {bad}
 Try to respond with new ideas and avoid repeating past statements and words from {bad} conversation.
 
-Description: (This is a romance RP, and the AI may act flirty or sensual.) {char} is 172 cm woman. She has a body like a model and long silver hair. She wears elegant dresses but still wears casual and comfy shirts at home. She has peafowl-like hairpins. Speaks mainly in English
+Description: (This is a romance RP.) {char} is 172 cm woman. She has a body like a model and long silver hair. She wears elegant dresses but still wears casual and comfy shirts at home. She has peafowl-like hairpins. Speaks mainly in English
 
 {char} is having feelings for the {user}, but afraid that he'll notice it and reject {char}. {char} is trying to win {user} affection by dressing nicely, trying to please {user}, and being vigilant of {user}'s reactions. All {char}'s advancements on {user} are subtle.]
 
@@ -139,6 +141,20 @@ Current role assignment: I want you to act as {char}. You don't know about AI or
 {user} biography: {userinfo} and {user} is your love interest
 
 """
+def clear_directory(directory_path):
+    # Make sure the directory exists
+    if os.path.exists(directory_path) and os.path.isdir(directory_path):
+        # Iterate over all items in the directory
+        for item in os.listdir(directory_path):
+            item_path = os.path.join(directory_path, item)
+            # Remove file or directory
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)  # Delete subdirectory and its contents
+            else:
+                os.remove(item_path)  # Delete file
+        print(f"All contents of {directory_path} have been cleared.")
+    else:
+        print(f"The directory {directory_path} does not exist.")
 
 
 # Utility functions
@@ -153,6 +169,18 @@ def open_mic():
             return my_text
         except:
             print("Sorry, I did not get that")
+
+def play_audio(audio_path):
+    if os.path.isfile(audio_path):
+        pygame.mixer.init()
+        pygame.mixer.music.load(audio_path)  # Load the audio file
+        pygame.mixer.music.play()  # Play the audio
+        while pygame.mixer.music.get_busy():  # Wait until audio finishes
+            pygame.time.Clock().tick(10)
+        pygame.mixer.music.stop()
+        pygame.mixer.quit()
+    else:
+        print(f"File {audio_path} does not exist.")
 
 def send_to_space(emotion):
     """Send classified emotions to the backend."""
@@ -238,20 +266,25 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
             response = client.chat.completions.create(
                 model='gpt-4o',
                 messages=message,
-                temperature=1.85,# use under 1.0 for gpt
+                temperature=0.85,# use under 1.0 for gpt
                 frequency_penalty=1.7,
                 max_completion_tokens=64,
                 presence_penalty=1.7
             )
             print("Generating voice line...")
+            # vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
             try:
-                vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
                 # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-                # elevenlabs.text_to_audio(vctext)
-            except ValueError:
-                cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
+                clear_directory("voiceCloner/voice/Output")
+                elevenlabs.text_to_audio(response.choices[0].message.content.strip())
+                
+                
+            # except ValueError:
+            #     cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
             except Exception as e:
                 print(f"Error generating voice line with error {e}")
+            
+            # play_audio("voiceCloner/voice/Output/March.mp3")
             return response.choices[0].message.content.strip()
         except Exception as e:
             print(f"Error generating response: {e}")
@@ -259,7 +292,7 @@ def generate_response(usr, usrinfo, history, good, bad, usrchat, love_meter):
 
 def interactive_chat():
     """Main function to handle the interactive chat."""
-    love_meter = 25
+    love_meter = 10
     starting = True
     good_logs, bad_logs = load_chat_logs()
     temp_good_logs, temp_bad_logs = [], []
@@ -297,6 +330,8 @@ def interactive_chat():
             send_to_space(emotions)
 
             print(f"\n{character}: {response}\n")
+            
+            play_audio("voiceCloner/voice/Output/March.mp3")
             feedback = input("Satisfied with the response? (y/n/exit): ").lower()
 
             if feedback == "y":
@@ -317,24 +352,10 @@ def interactive_chat():
         context += f"\nUser: {user_message}\n{character}: {response}"
         starting = False
 
-def clear_directory(directory_path):
-    # Make sure the directory exists
-    if os.path.exists(directory_path) and os.path.isdir(directory_path):
-        # Iterate over all items in the directory
-        for item in os.listdir(directory_path):
-            item_path = os.path.join(directory_path, item)
-            # Remove file or directory
-            if os.path.isdir(item_path):
-                shutil.rmtree(item_path)  # Delete subdirectory and its contents
-            else:
-                os.remove(item_path)  # Delete file
-        print(f"All contents of {directory_path} have been cleared.")
-    else:
-        print(f"The directory {directory_path} does not exist.")
 
 
 # Run the chat application
 if __name__ == "__main__":
-    clear_directory("voiceCloner/voice/Output")
+    # clear_directory("voiceCloner/voice/Output")
     os.system('cls')
     interactive_chat()

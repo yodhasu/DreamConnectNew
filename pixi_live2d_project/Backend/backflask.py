@@ -99,17 +99,15 @@ def handle_disconnect():
     print("Client disconnected")
 
 def get_latest_file(directory):
-    # List all files in the directory
     files = [f for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f))]
     
-    # If the directory is empty, return None
     if not files:
         return None
     
-    # Get the full path of the files and sort by modification time
-    latest_file = max(files, key=lambda f: os.path.getmtime(os.path.join(directory, f)))
+    files_with_mtime = [(f, os.path.getmtime(os.path.join(directory, f))) for f in files]
+    sorted_files = sorted(files_with_mtime, key=lambda f: f[1], reverse=True)  # Sort by newest first
     
-    # Return the full path of the latest file
+    latest_file = sorted_files[0][0]  # Get the latest file based on modification time
     return os.path.join(directory, latest_file)
 
 if __name__ == '__main__':

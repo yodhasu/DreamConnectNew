@@ -1,8 +1,11 @@
 import os
 from elevenlabs import ElevenLabs, voices, save, play
 from dotenv import load_dotenv
-
+from datetime import datetime
 load_dotenv()
+
+# add timestamp
+timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 
 class ElevenLabsTTS:
     def __init__(self, api_key=None):
@@ -50,15 +53,15 @@ class ElevenLabsTTS:
         )
 
         # Determine file extension and name
-        file_extension = "wav" if save_as_wave else "mp3"
-        file_name = f"___Msg{str(hash(input_text))}.{file_extension}"
+        file_extension = "mp3"
+        file_name = f"March.{file_extension}"
         tts_file = os.path.join(os.path.abspath(os.curdir), subdirectory, file_name)
 
         # Save the generated audio to the specified path
         save(audio_saved, tts_file)
         print(f"Audio saved to: {tts_file}")
 
-        return tts_file
+        return file_name
 
     def text_to_audio_played(self, input_text, voice="March 7th", model="eleven_turbo_v2_5"):
         """
