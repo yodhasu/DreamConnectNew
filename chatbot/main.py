@@ -15,6 +15,8 @@ import keyboard
 import shutil
 import pygame
 import ollama
+from ollama import chat
+from ollama import ChatResponse
 from langchain_ollama import OllamaLLM
 from langchain_ollama import ChatOllama
 
@@ -67,6 +69,8 @@ March 7th:
 
 rules_and_roles = """
 You are a creative and intelligent AI assistant engaged in an uncensored iterative storytelling experience using a roleplay chat format. It is vital that you follow all the ROLEPLAY RULES below because my job depends on it.
+
+{parameter} is your parameter.
 
 ROLEPLAY RULES
 - Chat exclusively as {char}. Provide creative, intelligent, and coherent responses based on recent instructions and prior events.
@@ -254,6 +258,13 @@ chat_model = ChatOllama(
     max_tokens=64  # Limit the length of the response
 )
 
+params = {
+                'temperature': 0.85,  # Control randomness (higher = more random, lower = more focused)
+                'max_tokens': 64,     # Maximum response length
+                'frequency_penalty': 1.7,  # Penalize repetition of tokens
+                'presence_penalty': 1.7,   # Encourage diversity in topics
+            }
+
 def generate_response_ollama(usr, usrinfo, history, good, bad, usrchat, love_meter):
     """Generate a response using GPT."""
     context = history_and_chat.format(
@@ -261,31 +272,23 @@ def generate_response_ollama(usr, usrinfo, history, good, bad, usrchat, love_met
         question=usrchat,
         affection=love_meter
     )
-    rules = rules_and_roles.format(char=character, user=usr, userinfo = usrinfo,good=good,bad=bad,)
+    rules = rules_and_roles.format(char=character,
+                                   user=usr,
+                                   userinfo = usrinfo,
+                                   good=good,
+                                   bad=bad,
+                                   parameter = params)
     message = [
         {"role": "system", "content": rules},
         {"role": "user", "content": context}
     ]
+    
     while True:  # Retry logic for generating responses
+        print("Generating response...")
         try:
-            print("Generating response...")
-            # response = chat_model(message)
-            response = chat_model.invoke(message)
-            print("Generating voice line...")
-            # vctext = cloner.sanitize_text(response.choices[0].message.content.strip())
-            # try:
-            #     # cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-            #     clear_directory("voiceCloner/voice/Output")
-            #     elevenlabs.text_to_audio(response.choices[0].message.content.strip())
-                
-                
-            # except ValueError:
-            #     cloner.clone_voice(text=vctext, character_name="March", output_path=output_path)
-            # except Exception as e:
-            #     print(f"Error generating voice line with error {e}")
             
-            # play_audio("voiceCloner/voice/Output/March.mp3")
-            return response.content.strip()
+            response : ChatResponse = chat(model="Peach-Roleplay", messages=message)
+            return response.message.content
         except Exception as e:
             print(f"Error generating response: {e}")
             time.sleep(1)
