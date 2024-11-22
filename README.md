@@ -134,5 +134,11 @@ Character: *looking out the window* I agree, the sunset is beautiful tonight.
 ```
 
 ---
+## TTS Interaction
+Currently, DreamConnect utilizes ElevenLabs for Text-to-Speech (TTS) functionality. While the TTS code isn't directly integrated into the main script, we've created a custom elevenlabs library that is already imported and utilized in the main chatbot.
 
+How to Use TTS
+To interact with the TTS system, the ElevenLabs functionality is encapsulated in the `chatbot/voiceCloner/elevenlabs.py` file. This module contains all necessary functions for text-to-speech conversion.
+
+If you'd like to explore or modify the TTS functionality, you can find the relevant code and functions in this file.
 Feel free to contribute and make improvements to the project. Enjoy your journey with your waifu!
