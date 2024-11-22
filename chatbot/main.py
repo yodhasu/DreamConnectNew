@@ -405,6 +405,6 @@ def interactive_chat():
 
 # Run the chat application
 if __name__ == "__main__":
-    # clear_directory("voiceCloner/voice/Output")
+    clear_directory("voiceCloner/voice/Output")
     os.system('cls')
     interactive_chat()
