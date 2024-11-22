@@ -1,79 +1,138 @@
 
 # DreamConnect
 
-DreamConnect is a project from Sigmalogy that allows everyone to finally connect with their own waifu.
-We are planning to use OpenAI GPT-4 in the future but for now we use a library called [g4f](https://github.com/techwithanirudh/g4f)
-
+DreamConnect is a project by **Sigmalogy** that allows users to connect with their own personalized waifu. Choose to interact with your waifu using either **GPT-4** (if you have an API key) or **Ollama** for a customizable experience.
 
 ## Authors
 
 - [@yodhasu](https://github.com/yodhasu)
-- Add later
-
+- Add later...
 
 ## Features
 
-- Live2D viewer
-- Customized character chatbot
-- voice clone and tts (in development)
-- Idk, add later.
+- Live2D character viewer
+- Customized chatbot with interactive AI personality
+- Voice cloning and text-to-speech (TTS) support (using ElevenLabs; local TTS in development)
+- And more features to come!
 
+## Requirements
 
-## Run Locally
-To run this you need Python 3.10 and CUDA GPU (optional)
+To run DreamConnect locally, you'll need the following:
 
-Clone the project.
+- **Python 3.10** (make sure it's installed correctly)
+- **Ollama** (for chat model integration)
+- **Models** (e.g., `llama3`, `gpt2`, etc.) if you're using Ollama
+- **CUDA-enabled GPU** (optional, for improved performance)
+  
+### Checking Python Version
 
-```bash
-  git clone https://github.com/yodhasu/DreamConnect.git
-```
-
-Go to the project directory.
-
-```bash
-  cd DreamConnect
-```
-
-Run the .bat file.
+If you have multiple Python versions installed, use the following commands to check your Python version:
 
 ```bash
-  UltimateDelution
+python --version
 ```
 
-I think I haven't make any version control, etc. If there's some python package u need just install it la
-## Add and Change Live2D models
-
-Go to the live2D model directory.
+or
 
 ```bash
-  cd DreamConnect/pixi_live2d_project/models
+py --version
 ```
-Add your desired model there.
 
-To use/change the model got to DreamConnect/pixi_live2d_project/js and modify the model directory
+In some cases, `python` might refer to a different version (e.g., Python 3.10), while `py` could point to a newer version (e.g., Python 3.12). Adjust the `install-all.bat` file to match your Python version:
+
+```bash
+set PYTHON_COMMAND=python
+```
+
+Change `python` to `py` if necessary, based on the version shown by `py --version`.
+
+---
+
+## Installation
+
+### 1. Clone the Project
+
+Clone the repository to your local machine using Git:
+
+```bash
+git clone https://github.com/yodhasu/DreamConnect.git
+```
+
+### 2. Go to the Project Directory
+
+Navigate into the project folder:
+
+```bash
+cd DreamConnect
+```
+
+### 3. Run the Setup Script
+
+Run the setup script (`install-all.bat`) to install dependencies and set up the environment:
+
+```bash
+install-all.bat
+```
+
+This script will ensure that the required dependencies are installed and ready for use. You can modify the `setup.bat` script if needed, particularly the Python command (`set PYTHON_COMMAND=python`) to match your system configuration.
+
+### 4. Start the Program
+
+Run the setup script (`UltimateDelution.bat`) to start:
+
+```bash
+UltimateDelution.bat
+```
+---
+
+## Add and Change Live2D Models
+
+1. **Navigate to the Models Directory**:
+
+```bash
+cd DreamConnect/pixi_live2d_project/models
+```
+
+2. **Add Your Model**:
+   - Add your desired Live2D model files to the `models` directory.
+
+3. **Update the Model Directory in the Code**:
+   - Go to the `DreamConnect/pixi_live2d_project/js` directory.
+   - Modify the `modeldir` variable in the JavaScript code to point to your newly added model directory:
 
 ```javascript
-const modeldir = "your_model_dirrectory";
+const modeldir = "your_model_directory";
 ```
-
-## Customize Character
-To customize the Character simply just playaround with the chatbot's prompt and parameters
-
 ## Chat Guide
 
-Asterisk (*) are used to mark condition, situation, action, basically for narrative function. Use it for better experience
+In DreamConnect, special characters are used to mark **conditions**, **situations**, and **actions** in dialogues. Here’s a quick guide to help you navigate the chat:
+
+- **Asterisk (`*`)**: Marks a special condition, situation, or action in the dialogue.
+- Use `*emotion*`, `*action*`, or `*situation detail*` to make your conversations more dynamic.
+
+### Examples:
+
+- **User specifies emotion:**
 
 ```bash
-  User: *emotion* Dialogue
-  Character: *emotion* Dialogue
+User: *angry* Why did you do that?!
+Character: *angry* I didn't mean to upset you. I'm sorry.
 ```
 
-```bash
-  User: *action* Dialogue
-  Character: *action* Dialogue
-```
+- **User specifies action:**
 
 ```bash
-  User: *situation detail* Dialogue
-  Character: *situation detail* Dialogue
+User: *gives a gift* I got this for you!
+Character: *surprised* Oh, thank you! It's beautiful!
 ```
+
+- **User adds context with situation:**
+
+```bash
+User: *sitting by the window* It's such a lovely evening.
+Character: *looking out the window* I agree, the sunset is beautiful tonight.
+```
+
+---
+
+Feel free to contribute and make improvements to the project. Enjoy your journey with your waifu!
