@@ -156,7 +156,15 @@ cython_debug/
 
 live2dviewer-build/
 
+# Ignore all .wav files
 *.wav
+
+# Ignore other files (optional)
+*.mp3
+*.log
+*.tmp
+
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
