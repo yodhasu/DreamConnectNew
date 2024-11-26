@@ -32,9 +32,10 @@ class interactiveChat:
         self.user_prompt_from_directory = usr_prompt_dir or "chatbot/user_prompt.txt"
         self.back = sendToBackend.backend()
         self.logger = context_logger.ContextLogger()
+        self.getPromptFromDir()
         
     # Funtion to setup prompt
-    def getPromptFromDir(self, question, addedcontextlog):
+    def getPromptFromDir(self):
         # get system prompt
         try:
             # print(self.system_prompt_from_directory)
@@ -51,19 +52,6 @@ class interactiveChat:
                     self.user_prompt = usrprompt.read()
         except Exception as e:
             raise(f"Error opening user prompt with error: {e}")
-        
-        # Formating input to prompt
-        self.system_prompt=self.system_prompt.format(
-            char = self.charater,
-            user = self.user,
-            userbio = self.bio
-        )
-        
-        self.user_prompt=self.user_prompt.format(
-            context = addedcontextlog or self.context,
-            affection = self.affection,
-            question = question
-        )
     
     
     # Define chat engine based on user
@@ -92,9 +80,24 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
-        self.getPromptFromDir(question=usr_input, addedcontextlog=self.logger.get_context_log())
+        self.getPromptFromDir()
+        
+        self.input = usr_input
+        # Formating input to prompt
+        
+        local_system_prompt = self.system_prompt
+        local_user_prompt = self.user_prompt
+        
+        local_user_prompt=local_user_prompt.format(
+            context = self.logger.get_context_log() or self.context,
+            affection = self.affection,
+            question = usr_input or self.input
+        )
+        
         self.defineEngine(api_key=api_key)
-        response = self.chatClient.generate_response(context=self.user_prompt, rules=self.system_prompt)
+        
+        # print(f"Context: {local_user_prompt}\n")
+        response = self.chatClient.generate_response(context=local_user_prompt, rules=local_system_prompt)
         self.back.send_to_space(response)
         # Debugging print to check the response
         # print(f"Generated response: {response}")
@@ -104,7 +107,6 @@ class interactiveChat:
             return
         
         print(f"{self.charater}: {response}\n")
-        print(f"Context: {self.user_prompt}\n")
         self.logger.log_context(usr_input, response)
         self.context += "\n"+'\n'.join(self.logger.get_context_log())
     
