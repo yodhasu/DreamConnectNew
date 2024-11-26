@@ -25,4 +25,4 @@ class backend():
             )
             response.raise_for_status()
         except requests.RequestException as e:
-            print(f"Error sending message to backend: {e}")
+            print("Can not send message to backend, no connection\n")

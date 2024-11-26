@@ -2,6 +2,7 @@ from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
 from chatbot import sendToBackend
+from chatbot import context_logger
 from datetime import datetime
 
 class interactiveChat:
@@ -20,6 +21,7 @@ class interactiveChat:
         self.context = (
             "Current date and time: "
             +str(datetime.now())
+            + " "
             +self.get_time_of_day()
             +"\n"
             + (context or "")       
@@ -29,9 +31,10 @@ class interactiveChat:
         self.system_prompt_from_directory = sys_prompt_dir or "chatbot/system_prompt.txt"
         self.user_prompt_from_directory = usr_prompt_dir or "chatbot/user_prompt.txt"
         self.back = sendToBackend.backend()
+        self.logger = context_logger.ContextLogger()
         
     # Funtion to setup prompt
-    def getPromptFromDir(self, question):
+    def getPromptFromDir(self, question, addedcontextlog):
         # get system prompt
         try:
             # print(self.system_prompt_from_directory)
@@ -57,7 +60,7 @@ class interactiveChat:
         )
         
         self.user_prompt=self.user_prompt.format(
-            context = self.context,
+            context = addedcontextlog or self.context,
             affection = self.affection,
             question = question
         )
@@ -89,7 +92,7 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
-        self.getPromptFromDir(question=usr_input)
+        self.getPromptFromDir(question=usr_input, addedcontextlog=self.logger.get_context_log())
         self.defineEngine(api_key=api_key)
         response = self.chatClient.generate_response(context=self.user_prompt, rules=self.system_prompt)
         self.back.send_to_space(response)
@@ -100,7 +103,10 @@ class interactiveChat:
             print("No response generated.")
             return
         
-        print(f"{self.charater}: {response}")
+        print(f"{self.charater}: {response}\n")
+        print(f"Context: {self.user_prompt}\n")
+        self.logger.log_context(usr_input, response)
+        self.context += "\n"+'\n'.join(self.logger.get_context_log())
     
     @staticmethod
     def get_time_of_day():

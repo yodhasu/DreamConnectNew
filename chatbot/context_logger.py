@@ -124,12 +124,12 @@ class ContextLogger:
         timestamp = datetime.now().strftime("%d/%m/%y - %H:%M:%S")
 
         # Create sentence for logging based on context
-        if entities_user or entities_response:
-            user_entities = ', '.join(e[0] for e in entities_user)
-            response_entities = ', '.join(e[0] for e in entities_response)
-            sentence = f"[{timestamp}] User: {user_entities} mentioned, Response: {response_entities} mentioned, Emotion: {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
-        else:
-            sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
+        # if entities_user or entities_response:
+        #     user_entities = ', '.join(e[0] for e in entities_user)
+        #     response_entities = ', '.join(e[0] for e in entities_response)
+        #     sentence = f"[{timestamp}] User: {user_entities} mentioned, Response: {response_entities} mentioned, Emotion: {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
+        # else:
+        sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
 
         # Add the dialogue to the context log
         self.context_log.append(sentence)
