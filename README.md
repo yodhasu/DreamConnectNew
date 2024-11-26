@@ -1,66 +1,68 @@
 
 # DreamConnect
 
-DreamConnect is a project by **Sigmalogy** that allows users to connect with their own personalized waifu. Choose to interact with your waifu using either **GPT-4** (if you have an API key) or **Ollama** for a customizable experience.
+**DreamConnect** is an interactive platform by **Sigmalogy** that lets you connect with your own personalized waifu. Choose between **GPT-4** (via OpenAI API) or **Ollama** for a custom chatbot experience. DreamConnect includes features such as a Live2D character viewer, customizable AI personalities, and more!
 
 ## Authors
 
 - [@yodhasu](https://github.com/yodhasu)
-- Add later...
+- [@Shearenity](https://github.com/Shearenity)
 
 ## Features
 
-- Live2D character viewer
-- Customized chatbot with interactive AI personality
-- Voice cloning and text-to-speech (TTS) support (using ElevenLabs; local TTS in development)
-- And more features to come!
+- **Live2D character viewer**: Immerse yourself in a 3D virtual environment with interactive characters.
+- **AI Personality Chatbot**: Enjoy conversations with a customizable AI character based on your preferences.
+- **Voice Cloning & Text-to-Speech (TTS)**: Communicate using synthesized voices (currently in maintenance).
+- **More to Come**: New features are continuously added to enhance your experience.
 
 ## Requirements
 
-To run DreamConnect locally, you'll need the following:
+To run **DreamConnect** locally, make sure you have the following:
 
-- **Python 3.10** (make sure it's installed correctly)
-- **Ollama** (for chat model integration)
-- **Models** (e.g., `llama3`, `gpt2`, etc.) if you're using Ollama
-- **CUDA-enabled GPU** (optional, for improved performance)
-  
+- **Python 3.10+** (Ensure it's properly installed)
+- **API Key** (Required for Groq or OpenAI integration)
+- **Ollama** (For chat model integration with models like `llama3`, `gpt2`, etc.)
+- **CUDA-enabled GPU** (Optional, for improved performance with large models)
+
 ### Checking Python Version
 
-If you have multiple Python versions installed, use the following commands to check your Python version:
+Run the following command to check your Python version:
 
 ```bash
 python --version
 ```
 
-or
+Or, if you use multiple Python versions:
 
 ```bash
 py --version
 ```
 
-In some cases, `python` might refer to a different version (e.g., Python 3.10), while `py` could point to a newer version (e.g., Python 3.12). Adjust the `install-all.bat` file to match your Python version:
+If needed, adjust the `install-all.bat` script to match your Python version:
 
 ```bash
 set PYTHON_COMMAND=python
 ```
 
-Change `python` to `py` if necessary, based on the version shown by `py --version`.
+Modify this to `py` if the output of `py --version` matches the Python version you're using.
 
 ---
 
 ## Installation
 
-### 1. Clone the Project
+Follow these steps to set up **DreamConnect** on your local machine:
 
-Clone the repository to your local machine using Git:
+### 1. Clone the Repository
+
+Clone the project to your local machine using Git:
 
 ```bash
 git clone https://github.com/yodhasu/DreamConnect.git
 ```
 
-### 2. Go to the Project Directory
+### 2. Navigate to the Project Directory
 
-Navigate into the project folder:
+Change to the project folder:
 
 ```bash
 cd DreamConnect
@@ -68,77 +70,114 @@ cd DreamConnect
 
 ### 3. Run the Setup Script
 
-Run the setup script (`install-all.bat`) to install dependencies and set up the environment:
+Execute the `install-all.bat` script to install dependencies:
 
 ```bash
 install-all.bat
 ```
 
-This script will ensure that the required dependencies are installed and ready for use. You can modify the `setup.bat` script if needed, particularly the Python command (`set PYTHON_COMMAND=python`) to match your system configuration.
+This script will automatically set up the necessary environment for you. If needed, adjust the Python command in the script to match your system configuration.
 
-### 4. Start the Program
-
-Run the setup script (`UltimateDelution.bat`) to start:
-
-```bash
-UltimateDelution.bat
-```
 ---
 
-## Add and Change Live2D Models
+## Adding and Changing Live2D Models
+
+### Prerequisite: Install Electron
+
+Ensure **Electron** is installed to manage Live2D models.
+
+### Steps:
 
 1. **Navigate to the Models Directory**:
 
-```bash
-cd DreamConnect/pixi_live2d_project/models
-```
+   ```bash
+   cd DreamConnect/live2dviewer-build/models
+   ```
 
 2. **Add Your Model**:
-   - Add your desired Live2D model files to the `models` directory.
 
-3. **Update the Model Directory in the Code**:
-   - Go to the `DreamConnect/pixi_live2d_project/js` directory.
-   - Modify the `modeldir` variable in the JavaScript code to point to your newly added model directory:
+   Place your desired Live2D model files (e.g., `model3.json`) into the `models` directory.
 
-```javascript
-const modeldir = "your_model_directory";
-```
+3. **Update the Model Directory in Code**:
+
+   - Go to the `DreamConnect/live2dviewer-build/js` directory.
+   - Update the `modeldir` variable in the `js` code to point to your new model directory:
+
+   ```javascript
+   const modeldir = "path_to_your_model_directory";
+   ```
+
+4. **Build the Electron App**:
+
+   In the `live2dviewer-build` folder, run:
+
+   ```bash
+   npm start
+   ```
+
+   This will launch a local server to test if the model works. Once confirmed, build the final app:
+
+   ```bash
+   npm run build
+   ```
+
+5. **Final Steps**:
+
+   - Navigate to the `dist` folder inside the build directory.
+   - Rename the `.exe` if desired and move it into the `live2dviewer` folder.
+
+---
+
 ## Chat Guide
 
-In DreamConnect, special characters are used to mark **conditions**, **situations**, and **actions** in dialogues. Here’s a quick guide to help you navigate the chat:
+DreamConnect uses special characters to handle **conditions**, **emotions**, and **actions** in conversations. Here's how to use them:
 
-- **Asterisk (`*`)**: Marks a special condition, situation, or action in the dialogue.
-- Use `*emotion*`, `*action*`, or `*situation detail*` to make your conversations more dynamic.
+- **Asterisk (`*`)**: Indicates special conditions or actions in the dialogue.
+  - Example: `*angry*` to set the character's emotion.
+  - Example: `*gives a gift*` for a specific action.
 
-### Examples:
+### Example Interactions:
 
-- **User specifies emotion:**
+- **User specifies emotion**:
 
 ```bash
 User: *angry* Why did you do that?!
-Character: *angry* I didn't mean to upset you. I'm sorry.
+Character: *apologetic* I'm really sorry, I didn't mean to upset you.
 ```
 
-- **User specifies action:**
+- **User specifies an action**:
 
 ```bash
 User: *gives a gift* I got this for you!
-Character: *surprised* Oh, thank you! It's beautiful!
+Character: *surprised* Wow, thank you so much! It's beautiful!
 ```
 
-- **User adds context with situation:**
+- **User adds context to the situation**:
 
 ```bash
-User: *sitting by the window* It's such a lovely evening.
-Character: *looking out the window* I agree, the sunset is beautiful tonight.
+User: *sitting by the window* It's such a peaceful evening.
+Character: *gazing outside* The stars are so bright tonight, aren't they?
 ```
 
 ---
-## TTS Interaction
-Currently, DreamConnect utilizes ElevenLabs for Text-to-Speech (TTS) functionality. While the TTS code isn't directly integrated into the main script, we've created a custom elevenlabs library that is already imported and utilized in the main chatbot.
 
-How to Use TTS
-To interact with the TTS system, the ElevenLabs functionality is encapsulated in the `chatbot/voiceCloner/elevenlabs.py` file. This module contains all necessary functions for text-to-speech conversion.
+## Text-to-Speech (TTS) Interaction
 
-If you'd like to explore or modify the TTS functionality, you can find the relevant code and functions in this file.
-Feel free to contribute and make improvements to the project. Enjoy your journey with your waifu!
+DreamConnect uses **ElevenLabs** for Text-to-Speech (TTS) functionality. The TTS integration is handled in the `chatbot/voiceCloner/elevenlabs.py` module.
+
+### How to Use TTS:
+
+1. **Locate the ElevenLabs TTS Functions**: The relevant code for TTS functionality is within the `elevenlabs.py` file.
+2. **TTS Integration**: This module can be used to convert text to speech, allowing your waifu to speak back to you.
+
+Feel free to contribute by exploring or improving the TTS features as part of the project!
+
+---
+
+## Contributing
+
+We welcome contributions to improve **DreamConnect**! If you have suggestions, bug fixes, or new features, feel free to fork the project and submit a pull request.
+
+---
+
+**Enjoy your personalized waifu experience with DreamConnect!** 🎉
