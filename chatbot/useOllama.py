@@ -3,7 +3,7 @@ from ollama import chat
 
 class ChatEngine:
     def __init__(self, model="llama3", params=None):
-        self.model = model
+        self.model = model or "llama3"
         self.params = params or {
             'temperature': 0.85,
             'max_tokens': 64,

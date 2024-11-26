@@ -6,10 +6,10 @@ class ChatEngine:
             self.Client = Groq(api_key=api_key)
         else:
             raise ValueError("API KEY needed, please get your groq API key at https://console.groq.com/keys")
-        self.Model = model
+        self.Model = model or "llama3-groq-70b-8192-tool-use-preview"
         self.Params = params or {
             'temperature': 0.85,
-            'max_tokens': 64,
+            'max_tokens': 500,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
@@ -31,5 +31,4 @@ class ChatEngine:
             )
             return response.choices[0].message.content
         except Exception as e:
-            print(f"Error generating response: {e}")
-            return None
+            raise (f"Error generating response: {e}")

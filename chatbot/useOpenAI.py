@@ -7,7 +7,7 @@ class ChatEngine:
         else:
             raise ValueError("API key is required for OpenAI API.")
         
-        self.Model = model
+        self.Model = model or "gpt-4"
         self.Params = params or {
             'temperature': 0.85,
             'max_tokens': 64,
