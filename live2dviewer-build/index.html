@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://127.0.0.1:8080; script-src 'self' https://cdn.jsdelivr.net https://cubism.live2d.com https://cdn.socket.io http://127.0.0.1:8080 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; object-src 'none';">
+
+    <title>Pixi Live2D Model with Lipsync</title>
+    <style>
+        body {
+            /*-webkit-app-region: drag;*/
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: transparent !important ;
+            /*background-color: transparent;  Transparent background for body */
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: transparent !;/*  Transparent background for canvas */
+        }
+        button {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100px; /* Keep size for interaction */
+            height: 50px; /* Keep size for interaction */
+            opacity: 0; /* Make it invisible but interactive */
+            z-index: 1000; /* Make sure it's above other elements */
+            /*pointer-events: auto;  Allow clicks */
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+    <button id="startButton">Start Model & Audio</button>
+    <script src="https://cubism.live2d.com/sdk-web/cubismcore/live2dcubismcore.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/dylanNew/live2d/webgl/Live2D/lib/live2d.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pixi.js@7.x/dist/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/RaSan147/pixi-live2d-display@v0.5.0-ls-6/dist/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/RaSan147/pixi-live2d-display@v0.5.0-ls-6/dist/cubism2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/RaSan147/pixi-live2d-display@v0.5.0-ls-6/dist/cubism4.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto-click the start button to simulate user action
+            const startButton = document.getElementById('startButton');
+            if (startButton) {
+                startButton.click(); // Simulate button click to trigger audio
+            }
+        });
+    </script>
+</body>
+</html>

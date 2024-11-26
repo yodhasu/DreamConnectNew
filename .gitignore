@@ -154,8 +154,6 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-live2dviewer-build/
-
 # Ignore all .wav files
 *.wav
 
