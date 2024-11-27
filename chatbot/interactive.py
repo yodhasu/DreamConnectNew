@@ -28,6 +28,7 @@ class interactiveChat:
             + (context or "")       
         )
         self.system_prompt = system_prompt
+        self.memory_retrieved = False
         self.user_prompt = user_prompt
         self.system_prompt_from_directory = sys_prompt_dir or "chatbot/system_prompt.txt"
         self.user_prompt_from_directory = usr_prompt_dir or "chatbot/user_prompt.txt"
@@ -56,7 +57,7 @@ class interactiveChat:
     
     
     # Define chat engine based on user
-    def defineEngine(self, engine = None, api_key = None, chat_model = None):
+    def defineEngine(self, engine = None, api_key = None, chat_model = None, parameter = None):
         if self.engine is None:
             if engine is None:
                 raise ValueError("engine can't be empty")
@@ -71,11 +72,11 @@ class interactiveChat:
         self.chatClient = None
         match self.engine:
             case "ollama":
-                self.chatClient = useOllama.ChatEngine(model=chat_model)
+                self.chatClient = useOllama.ChatEngine(model=chat_model, params=parameter)
             case "groq":
-                self.chatClient = useGroq.ChatEngine(api_key=api_key, model=chat_model)
+                self.chatClient = useGroq.ChatEngine(api_key=api_key, model=chat_model, params=parameter)
             case "openai":
-                self.chatClient = useOpenAI.ChatEngine(api_key=api_key, model=chat_model)
+                self.chatClient = useOpenAI.ChatEngine(api_key=api_key, model=chat_model, params=parameter)
             case _:
                 raise ValueError("Wrong engine/engine provided")
     
@@ -94,9 +95,10 @@ class interactiveChat:
             affection = self.affection,
             question = usr_input or self.input
         )
+        if not self.memory_retrieved:
+            local_user_prompt = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n" + local_user_prompt
         
-        local_user_prompt = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n" + local_user_prompt
-        
+        self.memory_retrieved = True
         self.defineEngine(api_key=api_key)
         
         # print(f"Context: {local_user_prompt}\n")
@@ -125,11 +127,18 @@ class interactiveChat:
             memory.append(collectlogs)
         memory = "".join(memory)
         
-        self.defineEngine(api_key=api_key)
+        params = {
+            'temperature': 0.85,
+            'max_tokens': 50,
+            'frequency_penalty': 1.7,
+            'presence_penalty': 1.7,
+        }
         
-        summarize_prompt = f"Here are some pervious logs \n{memory}\n Summarize what happened in short but detail."
+        self.defineEngine(api_key=api_key, parameter=params)
         
-        retrieved_memory = self.chatClient.generate_response(rules=summarize_prompt)
+        summarize_prompt = "User input is a log file of a chat. Summarize what happened in short but detail"
+        
+        retrieved_memory = self.chatClient.generate_response(context="", rules=summarize_prompt)
         
         return retrieved_memory
     
