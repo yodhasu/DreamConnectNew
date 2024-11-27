@@ -25,10 +25,6 @@ class interactiveChat:
             + " "
             +self.get_time_of_day()
             +"\n"
-            + "Previous memory:"
-            + "\n"
-            + self.retrieve_memory() or ""
-            + "\n"
             + (context or "")       
         )
         self.system_prompt = system_prompt
@@ -98,6 +94,8 @@ class interactiveChat:
             affection = self.affection,
             question = usr_input or self.input
         )
+        
+        local_user_prompt = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n" + local_user_prompt
         
         self.defineEngine(api_key=api_key)
         
