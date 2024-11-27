@@ -19,7 +19,7 @@ class backend():
         data = {'response': emotion}
         try:
             response = requests.post(
-                'http://127.0.0.1:8080/send_message',
+                'http://127.0.0.1:9090/send_message',
                 json=data,
                 headers={'Content-Type': 'application/json'}
             )

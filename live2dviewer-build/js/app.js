@@ -17,7 +17,7 @@ document.getElementById('startButton').addEventListener('click', async () => {
     app.renderer.gl.clearColor(0, 0, 0, 0); // Fully transparent
     // Function to initialize and setup the socket
     const setupSocket = () => {
-        const socket = io('http://127.0.0.1:8080');
+        const socket = io('http://127.0.0.1:9090');
 
         socket.on('connect', () => {
             console.log('Connected to Socket.IO server');
@@ -52,7 +52,7 @@ document.getElementById('startButton').addEventListener('click', async () => {
 
     // Function to play audio, only callable after user interaction
     const playAudio = async () => {
-        const audioLink = 'http://127.0.0.1:8080/audio';
+        const audioLink = 'http://127.0.0.1:9090/audio';
         try {
             await model.speak(audioLink, {
                 volume: 1,

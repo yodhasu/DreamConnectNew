@@ -39,7 +39,7 @@
 #     socketio.start_background_task(target=background_task)  # Runs without blocking socketio.run
 
 #     # Run the SocketIO server concurrently
-#     socketio.run(app, host='127.0.0.1', port=8080)
+#     socketio.run(app, host='127.0.0.1', port=9090)
 
 
 # UPDATED. NOW USING CHATBOT
@@ -111,4 +111,4 @@ def get_latest_file(directory):
     return os.path.join(directory, latest_file)
 
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=8080)
+    socketio.run(app, host='127.0.0.1', port=9090)

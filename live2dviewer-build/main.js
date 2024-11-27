@@ -12,7 +12,7 @@ function createWindow() {
     // Serve static files
     expressApp.use(express.static(path.join(__dirname)));
 
-    const PORT = 8000;
+    const PORT = 9000;
     server.listen(PORT, () => {
         console.log(`Server running at http://localhost:${PORT}`);
     });
