@@ -25,5 +25,4 @@ while True:
         if feedback.lower() == "y":
             break
         chat.makeChat(usr_input=usrchat, api_key=api_key)
-
-context_util.save_context_log()
+chat.save_logs()

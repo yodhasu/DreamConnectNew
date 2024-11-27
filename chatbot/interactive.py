@@ -1,3 +1,4 @@
+from typing import Self
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -109,6 +110,9 @@ class interactiveChat:
         print(f"{self.charater}: {response}\n")
         self.logger.log_context(usr_input, response)
         self.context += "\n"+'\n'.join(self.logger.get_context_log())
+    
+    def save_logs(self):
+        self.logger.save_context_log(f"logs/logfile_{str(datetime.now())}")
     
     @staticmethod
     def get_time_of_day():
