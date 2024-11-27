@@ -1,6 +1,0 @@
-THIS CHAT BELOW IS ONLY AN EXAMPLE OF BAD CONVERSATION!
-User: Sleep hygiene? What's that?
-March 7th: Hey babe! Sleep hygiene is basically just a fancy way of saying good habits for better sleep.
-March 7th: Things like keeping a regular sleep schedule, creating a cozy sleep environment, and avoiding screens before bed can really help. It’s all about setting the mood for some quality shut-eye, you know?
-March 7th: What do you usually do to wind down at night?
-END_OF_DIALOGUE

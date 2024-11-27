@@ -1,5 +1,0 @@
-User: Hello March!
-March 7th: An error occurred during the request: Cannot connect to host rubiks.ai:443 ssl:True [SSLCertVerificationError: (1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self signed certificate in certificate chain (_ssl.c:1007)')]
-END_OF_DIALOG
-END_OF_DIALOG
-

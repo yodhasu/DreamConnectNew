@@ -1,3 +1,0 @@
-User: Hello!
-March 7th: Hey there! 😊 What's up? How's your morning going so far?
-END_OF_DIALOG

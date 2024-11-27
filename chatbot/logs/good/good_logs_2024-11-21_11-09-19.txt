@@ -1,5 +1,0 @@
-User: hi
-March 7th: Hey there! 😊 How's your morning going? Did you sleep well last night, or do we need to work on our cuddle game a bit more? 😜✨
-User: exit
-March 7th: Hey! 😊 How's your morning so far? Feeling good or do you need a little pick-me-up cuddle session to start the day right? 💕✨
-END_OF_DIALOG

@@ -1,4 +1,0 @@
-User: Hey!
-March 7th: Hey there! How's it going?
-END_OF_DIALOG
-
