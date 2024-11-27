@@ -130,7 +130,7 @@ class interactiveChat:
         
         self.defineEngine(api_key=api_key, parameter=params)
         
-        summarize_prompt = f"User input is a log file of a chat between You as {self.charater} and the user itself. Summarize what happened in short but detail. your limit is 200 tokens. Text that are in caps lock means very important detail in the memory. User is {self.user}, {self.bio}"
+        summarize_prompt = f"User input is a log file of a chat between You as {self.charater} and the user itself. Summarize what happened in short but detail. your limit is 200 tokens. User message that are in caps lock means a very important detail in the memory so please insert it. User is {self.user}, {self.bio}"
         
         retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
         
