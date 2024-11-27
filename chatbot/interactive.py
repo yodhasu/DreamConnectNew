@@ -1,4 +1,4 @@
-from typing import Self
+import os
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -25,6 +25,10 @@ class interactiveChat:
             + " "
             +self.get_time_of_day()
             +"\n"
+            + "Previous memory:"
+            + "\n"
+            + self.retrieve_memory() or ""
+            + "\n"
             + (context or "")       
         )
         self.system_prompt = system_prompt
@@ -113,6 +117,23 @@ class interactiveChat:
     
     def save_logs(self):
         self.logger.save_context_log(f"logs/logfile_{str(datetime.now())}")
+    
+    def retrieve_memory(self, api_key = None):
+        memory  = []
+        for logs in os.listdir("logs/"):
+            collectlogs = ""
+            with open(logs, "r") as logfiles:
+                collectlogs = logfiles.read()
+            memory.append(collectlogs)
+        memory = "".join(memory)
+        
+        self.defineEngine(api_key=api_key)
+        
+        summarize_prompt = f"Here are some pervious logs \n{memory}\n Summarize what happened in short but detail."
+        
+        retrieved_memory = self.chatClient.generate_response(rules=summarize_prompt)
+        
+        return retrieved_memory
     
     @staticmethod
     def get_time_of_day():
