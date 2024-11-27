@@ -116,11 +116,11 @@ class interactiveChat:
         self.context += "\n"+'\n'.join(self.logger.get_context_log())
     
     def save_logs(self):
-        self.logger.save_context_log(f"logs/logfile_{str(datetime.now())}")
+        self.logger.save_context_log(f"chatbot/logs/logfile_{str(datetime.now())}")
     
     def retrieve_memory(self, api_key = None):
         memory  = []
-        for logs in os.listdir("logs/"):
+        for logs in os.listdir("chatbot/logs/"):
             collectlogs = ""
             with open(logs, "r") as logfiles:
                 collectlogs = logfiles.read()
