@@ -163,7 +163,7 @@ class interactiveChat:
         
         params = {
             'temperature': 0.1,
-            'max_tokens': 300,
+            'max_tokens': 200,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
@@ -178,10 +178,10 @@ class interactiveChat:
         Off-topic: yes/no
         Response indicator: good/bad
 
-        Summarize the conversation briefly but with detail. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
+        Summarize the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
         If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
 
-        Keep the summary under 200 tokens.
+        Keep the summary under 100 tokens.
         User is {self.user}, {self.bio}"
         """
         
