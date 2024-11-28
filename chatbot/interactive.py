@@ -1,4 +1,6 @@
 import os
+
+from requests_toolbelt import user_agent
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -72,10 +74,25 @@ class interactiveChat:
             case _:
                 raise ValueError("Wrong engine/engine provided")
     
+    def classifyFeedback(self, text):
+        feedtext = ""
+        feedtext = text
+        if feedtext.lower() in ["y", "yes"]:
+            return "good"
+        elif feedtext.lower() in ["n", "no"]:
+            return "bad"
+        else:
+            return "neutral"
+    
+    def getFeedback(self):
+        usr_feed = input("Good? (y/n)").lower()
+        return usr_feed
+    
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
         self.getPromptFromDir()
         curr_memory = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
+        intention = self.intentIdentifier(usr_input, api_key)
         self.input = usr_input
         # Formating input to prompt
         
@@ -83,6 +100,7 @@ class interactiveChat:
         local_user_prompt = self.user_prompt
         
         local_user_prompt=local_user_prompt.format(
+            intention = intention,
             date = str(datetime.now()),
             time = self.get_time_of_day(),
             memory = curr_memory or "",
@@ -93,7 +111,7 @@ class interactiveChat:
         
         self.defineEngine(api_key=api_key)
         
-        # print(f"Context: {local_user_prompt}\n")
+        print(f"Context: {local_user_prompt}\n")
         response = self.chatClient.generate_response(context=local_user_prompt, rules=local_system_prompt)
         self.back.send_to_space(response)
         # Debugging print to check the response
@@ -103,9 +121,16 @@ class interactiveChat:
             print("No response generated.")
             return
         
-        print(f"{self.charater}: {response}\n")
-        self.logger.log_context(usr_input, response)
-        self.context += "\n"+'\n'.join(self.logger.get_context_log())
+        def getFeedback(self):
+            usr_feed = input("Good? (y/n)").lower()
+            return usr_feed
+        
+        print(f"\n{self.charater}: {response}\n")
+        usr_feed = self.getFeedback()
+        classify = self.classifyFeedback(usr_feed)
+        self.logger.log_context(usr_input, response, classify)
+        self.context += "\n" + ' '.join(self.logger.get_context_log()) + "\n"
+        return usr_feed
     
     def save_logs(self):
         filename = f"chatbot/logs/logfile_{str(datetime.now())}".replace(":", "-")
@@ -122,19 +147,33 @@ class interactiveChat:
         memory = "".join(memory)
         
         params = {
-            'temperature': 0.85,
-            'max_tokens': 200,
+            'temperature': 0.2,
+            'max_tokens': 100,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
         
         self.defineEngine(api_key=api_key, parameter=params)
         
-        summarize_prompt = f"User input is a log file of a chat between You as {self.charater} and the user itself. Summarize what happened in short but detail. your limit is 200 tokens. User message that are in caps lock means a very important detail in the memory so please insert it. User is {self.user}, {self.bio}"
+        summarize_prompt = f"User input is a log file of a chat between You as {self.charater} and the user itself with format context format: [Timestamp] User: user_response tone of response Character: character_response tone of response Off-topic: yes/no, Response indicator (good/bad). Summarize what happened in short but detail, don't retain the memory if the response indicator marks it as a bad response. your limit is 100 tokens. User message that are in caps lock means a very important detail in the memory so please insert it. Please summarize the reponse only. User is {self.user}, {self.bio}"
         
         retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
         
         return retrieved_memory
+    
+    def intentIdentifier(self, user_input, api_key):
+        params = {
+            'temperature': 0,
+            'max_tokens': 100,
+            'frequency_penalty': 1.7,
+            'presence_penalty': 1.7,
+        }
+        prompt = """
+        Identify the intention of the user's input
+        """
+        self.defineEngine(api_key=api_key, parameter=params)
+        intent = self.chatClient.generate_response(context=prompt, rules=user_input)
+        return intent
     
     @staticmethod
     def get_time_of_day():

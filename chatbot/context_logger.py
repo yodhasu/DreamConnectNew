@@ -102,7 +102,7 @@ class ContextLogger:
             return "Bad Response"
         return "Neutral Response"
 
-    def log_context(self, user_message, character_response):
+    def log_context(self, user_message, character_response, response_quality):
         """
         Processes a single dialogue and logs it with context information, including off-topic detection.
         """
@@ -118,7 +118,7 @@ class ContextLogger:
         # Check if response is too long, repetitive or good/bad
         response_length = self.check_response_length(character_response)
         repetitiveness = self.check_repetitiveness(character_response)
-        response_quality = self.classify_response(character_response)
+        # response_quality = self.classify_response(character_response)
 
         # Create a timestamped log entry
         timestamp = datetime.now().strftime("%d/%m/%y - %H:%M:%S")
@@ -129,7 +129,8 @@ class ContextLogger:
         #     response_entities = ', '.join(e[0] for e in entities_response)
         #     sentence = f"[{timestamp}] User: {user_entities} mentioned, Response: {response_entities} mentioned, Emotion: {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
         # else:
-        sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
+        # sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
+        sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality} response"
 
         # Add the dialogue to the context log
         self.context_log.append(sentence)

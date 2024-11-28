@@ -19,10 +19,9 @@ while True:
     usrchat = input("You: ")
     if usrchat.lower() == "exit":
         break 
-    chat.makeChat(usr_input=usrchat, api_key=api_key)
+    feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)
     while True:
-        feedback = input("Good? (y/n)")
         if feedback.lower() == "y":
             break
-        chat.makeChat(usr_input=usrchat, api_key=api_key)
+        feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)
 chat.save_logs()
