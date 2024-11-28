@@ -162,7 +162,7 @@ class interactiveChat:
         memory = "".join(memory)
         
         params = {
-            'temperature': 0.1,
+            'temperature': 0.3,
             'max_tokens': 200,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,

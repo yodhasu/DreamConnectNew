@@ -9,7 +9,7 @@ class ChatEngine:
         self.Model = model or "llama3-groq-70b-8192-tool-use-preview"
         self.Params = params or {
             'temperature': 0.85,
-            'max_tokens': 500,
+            'max_tokens': 300,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
