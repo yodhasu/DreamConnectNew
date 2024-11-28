@@ -163,14 +163,27 @@ class interactiveChat:
         
         params = {
             'temperature': 0.1,
-            'max_tokens': 100,
+            'max_tokens': 300,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
         
         self.defineEngine(api_key=api_key, parameter=params)
+        # print(memory)
         
-        summarize_prompt = f"User input is a log file of a chat between You as {self.charater} and the user itself with format context format: [Timestamp] User: user_response tone of response Character: character_response tone of response Off-topic: yes/no, Response indicator (good/bad). Summarize what happened in short but detail, don't retain the memory if the response indicator marks it as a bad response. your limit is 100 tokens. User message that are in caps lock means a very important detail in the memory so please insert it. Please summarize the reponse only. User is {self.user}, {self.bio}"
+        summarize_prompt = f"""
+        "User input is a log file of a chat between you, as {self.charater}, and the user. The format is as follows:
+        [Timestamp] User: user_response (tone of response)
+        Character: character_response (tone of response)
+        Off-topic: yes/no
+        Response indicator: good/bad
+
+        Summarize the conversation briefly but with detail. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
+        If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
+
+        Keep the summary under 200 tokens.
+        User is {self.user}, {self.bio}"
+        """
         
         retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
         
