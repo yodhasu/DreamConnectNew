@@ -1,5 +1,6 @@
 import os
 import re
+import stat
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -7,6 +8,7 @@ from chatbot import sendToBackend
 from chatbot import context_logger
 from datetime import datetime
 from urlextract import URLExtract
+from transformers import pipeline
 import base64
 
 extractor = URLExtract()
@@ -90,12 +92,23 @@ class interactiveChat:
         usr_feed = input("Good? (y/n)").lower()
         return usr_feed
     
+    def imageVision(self, imgpath):
+        print(f"Image path: {imgpath}")
+        result = self.chatClient.groqVision(img_path=imgpath)
+        return result
+    
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
+        # get prompt
         self.getPromptFromDir()
+        # get memory
         curr_memory = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
+        # identify user's intention
         intention = self.intentIdentifier(usr_input, api_key)
-        self.input = usr_input
+        # check for images in user input
+        img_summarized = ""
+        status, img = self.filterFilepath(usr_input)
+        print(status, img)
         # Formating input to prompt
         
         local_system_prompt = self.system_prompt
@@ -110,6 +123,10 @@ class interactiveChat:
             affection = self.affection,
             question = usr_input or self.input
         )
+        # add image summary to the prompt
+        if status != 0:
+            img_summarized = self.imageVision(img)
+            local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
         
         self.defineEngine(api_key=api_key)
         
@@ -173,28 +190,33 @@ class interactiveChat:
         intent = self.chatClient.generate_response(context=prompt, rules=user_input)
         return intent
     
-    @staticmethod
-    def filterFilepath(textinput):
-        path_pattern = path_pattern = r"'([A-Za-z]:\\(?:[^\\/:*?\"<>|\r\n]+\\)*[^\\/:*?\"<>|\r\n]+)'"
-        match = re.search(path_pattern, textinput)
+    
+    def filterFilepath(self, textinput):
+        path_pattern = r'["\']?([a-zA-Z]:[\\\/][^<>:"|?*]+(?:[\\\/][^<>:"|?*]+)*)["\']?'
+        match = re.findall(path_pattern, textinput)
+        urlfound = extractor.find_urls(textinput)
         
-        if match:
-            file_path = match.group(1)
-            
-            # Replace backslashes with forward slashes in the file path
-            processed_path = file_path.replace("\\", "/")
-            
-            # encode to base64
-            with open(processed_path, "rb") as image_file:
-                base64_image =  base64.b64encode(image_file.read()).decode('utf-8')
-                return 1, f"data:image/jpeg;base64,{base64_image}"
+        if len(urlfound) >=1:
+            return 2, urlfound[0]
         else:
-            urls = extractor.find_urls(textinput)
-            if urls == "":
-                return 0, ""
+            if match:
+                file_path = match[0]
+                
+                # Replace backslashes with forward slashes in the file path
+                processed_path = file_path.replace("\\", "/")
+                
+                # encode to base64
+                encoded_image = self.encode_image(processed_path)
+                local_image = f"data:image/jpeg;base64,{encoded_image}"
+                
+                return 1, local_image
             else:
-                link =''.join(urls)
-                return 2, link
+                return 0, ""
+    
+    @staticmethod
+    def encode_image(image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
     
     @staticmethod
     def get_time_of_day():

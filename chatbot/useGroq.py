@@ -42,7 +42,7 @@ class ChatEngine:
                     "content": [
                         {
                             "type": "text",
-                            "text": "What's in this image?"
+                            "text": "Describe what's in the image in short. Your token is limited to 100"
                         },
                         {
                             "type": "image_url",
@@ -53,8 +53,8 @@ class ChatEngine:
                     ]
                 }
             ],
-            temperature=1,
-            max_tokens=1024,
+            temperature=0,
+            max_tokens=500,
             top_p=1,
             stream=False,
             stop=None,
