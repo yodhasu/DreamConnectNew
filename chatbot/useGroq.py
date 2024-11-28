@@ -32,3 +32,32 @@ class ChatEngine:
             return response.choices[0].message.content
         except Exception as e:
             raise (f"Error generating response: {e}")
+    
+    def groqVision(self, img_path):
+        completion = self.Client.chat.completions.create(
+            model="llama-3.2-11b-vision-preview",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "What's in this image?"
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": img_path
+                            }
+                        }
+                    ]
+                }
+            ],
+            temperature=1,
+            max_tokens=1024,
+            top_p=1,
+            stream=False,
+            stop=None,
+        )
+        return completion.choices[0].message.content
+        

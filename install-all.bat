@@ -57,6 +57,8 @@ echo Installing dependencies...
     echo elevenlabs
     echo coqui-tts
     echo tqdm
+    echo urlextract
+    echo gensim
 ) > temp_requirements.txt
 
 :: Step 7: Install packages except torch and torchaudio

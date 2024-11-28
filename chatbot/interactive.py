@@ -1,13 +1,15 @@
 import os
-
-from requests_toolbelt import user_agent
+import re
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
 from chatbot import sendToBackend
 from chatbot import context_logger
 from datetime import datetime
+from urlextract import URLExtract
+import base64
 
+extractor = URLExtract()
 class interactiveChat:
     def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", system_prompt = None, user_prompt = None, sys_prompt_dir = None, usr_prompt_dir = None):
         if user is None or bio is None:
@@ -120,11 +122,7 @@ class interactiveChat:
         if response is None:
             print("No response generated.")
             return
-        
-        def getFeedback(self):
-            usr_feed = input("Good? (y/n)").lower()
-            return usr_feed
-        
+
         print(f"\n{self.charater}: {response}\n")
         usr_feed = self.getFeedback()
         classify = self.classifyFeedback(usr_feed)
@@ -147,7 +145,7 @@ class interactiveChat:
         memory = "".join(memory)
         
         params = {
-            'temperature': 0.2,
+            'temperature': 0.1,
             'max_tokens': 100,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
@@ -174,6 +172,29 @@ class interactiveChat:
         self.defineEngine(api_key=api_key, parameter=params)
         intent = self.chatClient.generate_response(context=prompt, rules=user_input)
         return intent
+    
+    @staticmethod
+    def filterFilepath(textinput):
+        path_pattern = path_pattern = r"'([A-Za-z]:\\(?:[^\\/:*?\"<>|\r\n]+\\)*[^\\/:*?\"<>|\r\n]+)'"
+        match = re.search(path_pattern, textinput)
+        
+        if match:
+            file_path = match.group(1)
+            
+            # Replace backslashes with forward slashes in the file path
+            processed_path = file_path.replace("\\", "/")
+            
+            # encode to base64
+            with open(processed_path, "rb") as image_file:
+                base64_image =  base64.b64encode(image_file.read()).decode('utf-8')
+                return 1, f"data:image/jpeg;base64,{base64_image}"
+        else:
+            urls = extractor.find_urls(textinput)
+            if urls == "":
+                return 0, ""
+            else:
+                link =''.join(urls)
+                return 2, link
     
     @staticmethod
     def get_time_of_day():
