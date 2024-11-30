@@ -24,4 +24,4 @@ Question: {question}
 
 User Intention: {intention}
 
-Your task is to respon to the Question. Use the prompt to help you generate good answer
+Your task is to respon to the Question. Use the prompt to help you generate good answer and use tools IF YOU THINK YOU NEED IT. AVOID USING TOOLS IF YOU DON'T NEED IT!

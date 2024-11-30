@@ -36,6 +36,7 @@ class interactiveChat:
         self.getPromptFromDir()
         self.response = ""
         self.char_nick = charnickname
+        self.back.send_to_space(["neutral"])
         
     # Funtion to setup prompt
     def getPromptFromDir(self):
@@ -184,7 +185,7 @@ class interactiveChat:
         memory = "\n".join(memory)
         
         params = {
-            'temperature': 0.5,
+            'temperature': 0,
             'max_tokens': 200,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
@@ -199,7 +200,7 @@ class interactiveChat:
         Tell what already happened in the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
         If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
         
-        Most recent contents are more important than the others.
+        Most recent contents are more important than the others, you can compare the timestamps in the logs to do your job.
 
         Keep the answer under 200 tokens.
         the answer must be in paragraph.
@@ -223,12 +224,13 @@ class interactiveChat:
         Character's nickname: {self.char_nick}
         you may use or not use it to do your task.
         IF NO PREVIOUS SYSTEM RESPONSE PROVIDED JUST FOCUS ON USER'S INPUT!
-        DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
+        
         
         Your task is:
         Identify the intention of the user's input.
         
         User's input {user_input}
+        DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         """
         system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 50 - 100 token"
         self.defineEngine(api_key=api_key, parameter=params)
