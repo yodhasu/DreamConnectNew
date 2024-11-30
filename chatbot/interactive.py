@@ -33,6 +33,7 @@ class interactiveChat:
         self.back = sendToBackend.backend()
         self.logger = context_logger.ContextLogger()
         self.getPromptFromDir()
+        self.response = ""
         
     # Funtion to setup prompt
     def getPromptFromDir(self):
@@ -99,12 +100,15 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
+        # auto update memory logs
+        if len(self.logger.get_context_log()) > 20:
+            self.save_logs()
         # get prompt
         self.getPromptFromDir()
         # get memory
         curr_memory = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
         # identify user's intention
-        intention = self.intentIdentifier(usr_input, api_key)
+        intention = self.intentIdentifier(usr_input, self.response, api_key)
         # check for images in user input
         img_summarized = ""
         status, img = self.filterFilepath(usr_input)
@@ -121,7 +125,7 @@ class interactiveChat:
             memory = curr_memory or "",
             context = self.logger.get_context_log() or self.context,
             affection = self.affection,
-            question = usr_input or self.input
+            question = usr_input
         )
         # add image summary to the prompt
         if status != 0:
@@ -141,10 +145,11 @@ class interactiveChat:
             return
 
         print(f"\n{self.charater}: {response}\n")
+        self.response = response
         usr_feed = self.getFeedback()
         classify = self.classifyFeedback(usr_feed)
         self.logger.log_context(usr_input, response, classify)
-        self.context += "\n" + ' '.join(self.logger.get_context_log()) + "\n"
+        self.context = self.logger.get_context_log()
         return usr_feed
     
     def save_logs(self):
@@ -152,17 +157,26 @@ class interactiveChat:
         filename = filename.replace(".", "-")
         self.logger.save_context_log(filename=f"{filename}.txt")
     
-    def retrieve_memory(self, api_key = None):
-        memory  = []
-        for logs in os.listdir("chatbot/logs/"):
-            collectlogs = ""
-            with open(f"chatbot/logs/{logs}", "r") as logfiles:
-                collectlogs = logfiles.read()
-            memory.append(collectlogs)
-        memory = "".join(memory)
+    def retrieve_memory(self, api_key = None, log_dir = "chatbot/logs/", max_logs = 5):
+        memory = []
+    
+        # Get a list of all log files sorted by name
+        log_files = sorted(
+            [os.path.join(log_dir, log) for log in os.listdir(log_dir) if log.endswith(".txt")],
+            reverse=True  # Sort by name in descending order
+        )
+        # Limit to the most recent `max_logs` files
+        recent_logs = log_files[:max_logs]
+        for log_path in recent_logs:
+            print("Try to print path")
+            print(log_path)
+            with open(log_path, "r") as logfile:
+                log_content = logfile.read()
+                memory.append(log_content)
+        memory = "\n".join(memory)
         
         params = {
-            'temperature': 0.3,
+            'temperature': 0.5,
             'max_tokens': 200,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
@@ -170,19 +184,15 @@ class interactiveChat:
         
         self.defineEngine(api_key=api_key, parameter=params)
         # print(memory)
-        
         summarize_prompt = f"""
-        "User input is a log file of a chat between you, as {self.charater}, and the user. The format is as follows:
-        [Timestamp] User: user_response (tone of response)
-        Character: character_response (tone of response)
-        Off-topic: yes/no
-        Response indicator: good/bad
+        "User input is a log file of a chat between you, as {self.charater}, and the user. The log is formated as follows:
+        [Timestamp] User: user_response (tone of response)Character: character_response (tone of response)Off-topic: yes/noResponse indicator: good/bad
 
-        Summarize the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
+        Tell what already happened in the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
         If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
 
-        Keep the summary under 100 tokens.
-        User is {self.user}, {self.bio}"
+        Keep the answer under 200 tokens.
+        the answer must be in paragraph.
         """
         
         retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
@@ -197,6 +207,10 @@ class interactiveChat:
             'presence_penalty': 1.7,
         }
         prompt = """
+        Here is the previous response of the character: {character_response}
+        You may or may not use it to help your task.
+        
+        Your task is:
         Identify the intention of the user's input
         """
         self.defineEngine(api_key=api_key, parameter=params)

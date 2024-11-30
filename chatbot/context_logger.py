@@ -107,6 +107,7 @@ class ContextLogger:
         Processes a single dialogue and logs it with context information, including off-topic detection.
         """
         # Detect emotion and extract entities from both user and character responses
+        dict_sentences = {}
         entities_user = self.extract_named_entities(user_message)
         entities_response = self.extract_named_entities(character_response)
         emotion_user = self.detect_emotion(user_message)
@@ -121,7 +122,7 @@ class ContextLogger:
         # response_quality = self.classify_response(character_response)
 
         # Create a timestamped log entry
-        timestamp = datetime.now().strftime("%d/%m/%y - %H:%M:%S")
+        timestamp = datetime.now().strftime("%d - %m - %y - %H:%M:%S")
 
         # Create sentence for logging based on context
         # if entities_user or entities_response:
@@ -130,8 +131,19 @@ class ContextLogger:
         #     sentence = f"[{timestamp}] User: {user_entities} mentioned, Response: {response_entities} mentioned, Emotion: {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
         # else:
         # sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality}"
-        sentence = f"[{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality} response"
-
+        # sentence = f"{timestamp}] User: '{user_message}' expressed {emotion_user}, Character: '{character_response}' expressed {emotion_response}, Off-topic: {'Yes' if off_topic else 'No'}, {response_length if response_length else ''} {repetitiveness if repetitiveness else ''} {response_quality} response"
+        # dict_sentences.
+        sentence = {
+            "Timestamp" : timestamp,
+            "User message" : user_message,
+            "User emotion" : emotion_user,
+            "AI Response" : character_response,
+            "AI emotion" : emotion_response,
+            "Off topic response" : 'Yes' if off_topic else 'no',
+            "Response length" : response_length if response_length else 'Good length',
+            "Repetitive response" : repetitiveness if repetitiveness else 'Not repetitive',
+            "Overall Response quality" : response_quality
+        }
         # Add the dialogue to the context log
         self.context_log.append(sentence)
 
@@ -148,3 +160,5 @@ class ContextLogger:
         with open(filename, "w") as file:
             for entry in self.context_log:
                 file.write(f"{entry}\n")
+        self.context_log.clear()
+        self.previous_responses.clear()
