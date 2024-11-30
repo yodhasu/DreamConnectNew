@@ -199,7 +199,7 @@ class ChatEngine:
         # Define models
         self.ROUTING_MODEL = "llama3-70b-8192"
         self.TOOL_USE_MODEL = "llama3-groq-70b-8192-tool-use-preview"
-        self.GENERAL_MODEL = "gemma2-9b-it"
+        self.GENERAL_MODEL = "llama-3.1-70b-versatile"
         self.UTILITY_TOOLS = "llama-3.1-70b-versatile"
 
         # Available tools
@@ -208,6 +208,74 @@ class ChatEngine:
             "calculate": calculate,
             "web_search": lambda query: google_web_search(query),
         }
+        self.tools_details = [
+            # {
+            #     "type": "function",
+            #     "function": {
+            #         "name": "name",
+            #         "description": "function description",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 # all parameters needed
+                            
+            #             },
+            #             "required": ["required_parameters"],
+            #         },
+            #     },
+            # },
+            {
+                "type": "function",
+                "function": {
+                    "name": "get_joke",
+                    "description": "tell or generate random jokes",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            # all parameters needed
+                            
+                        },
+                        "required": [],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "calculate",
+                    "description": "Evaluate or calculate basic math problems",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            # all parameters needed
+                            "expression": {
+                                "type": "string",
+                                "description": "The mathematical expression to evaluate",
+                            },
+                        },
+                        "required": ["expression"],
+                    },
+                },
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "web_search",
+                    "description": "Search something on internet or Google, use Google search API.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            # all parameters needed
+                            "query": {
+                                "type": "string",
+                                "description": "Things that needed to be search on Google or internet.",
+                            },
+                        },
+                        "required": ["query"],
+                    },
+                },
+            },
+        ]
 
     def route_query(self, query):
         """Determine whether tools are needed and which tool to use"""
@@ -227,7 +295,8 @@ class ChatEngine:
                 {"role": "system", "content": "You are a routing assistant. Determine the correct tool based on the user query."},
                 {"role": "user", "content": routing_prompt}
             ],
-            max_tokens=20
+            max_tokens=20,
+            temperature=0
         )
         routing_decision = response.choices[0].message.content.strip()
         print(routing_decision)
@@ -238,30 +307,55 @@ class ChatEngine:
 
     def run_with_tool(self, tool_name, query):
         """Handle queries requiring tools using TOOL_USE_MODEL"""
-        messages = [
-            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Summarize your answer in 100 until 200 tokens"},
-            {"role": "user", "content": query},
+        tool_messages = [
+            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. uSE {tool_name} function to generate response"},
+            {"role": "user", "content": query}
         ]
         response = self.client.chat.completions.create(
             model=self.TOOL_USE_MODEL,
-            messages=messages,
+            messages=tool_messages,
             max_tokens=4096,
-            tool_choice="auto"
+            tools= self.tools_details,
+            tool_choice="required"
         )
-        tool_calls = response.choices[0].message.tool_calls
-
+        first_message = response.choices[0].message
+        tool_calls = first_message.tool_calls
+        print("Call for tools: ", tool_calls)
         if tool_calls:
-            messages.append(response.choices[0].message)
+            tool_messages.append(first_message.content)
             for tool_call in tool_calls:
                 function_args = json.loads(tool_call.function.arguments)
-                tool_response = self.tools[tool_name](**function_args)
-                messages.append({"tool_call_id": tool_call.id, "role": "tool", "name": tool_name, "content": tool_response})
-
+                print("Args: ", function_args)
+                # tool_response = self.tools[tool_name](**function_args)
+                match tool_name:
+                    case "web_search":
+                        funcion_response = google_web_search(function_args.get("query"))
+                    case "evaluate":
+                        funcion_response = calculate(function_args.get("expression"))
+                    case "get_joke":
+                        funcion_response =get_joke()
+                print("Function Response", funcion_response)
+                print("Old message", tool_messages)
+                tool_messages.pop()
+                print("Popped message", tool_messages)
+                print("Message len", len(tool_messages))
+                tool_messages.append(
+                    {
+                        "tool_call_id": tool_call.id,
+                        "role": "tool",
+                        "name": tool_name,
+                        "content": funcion_response,
+                    }
+                )
+                print("Message len", len(tool_messages))
+                print("New message: ", tool_messages)
             final_response = self.client.chat.completions.create(
                 model=self.TOOL_USE_MODEL,
-                messages=messages
+                messages=tool_messages
             )
+            print("The tool is working")
             return final_response.choices[0].message.content
+        print("No, the tool is not working")
         return response.choices[0].message.content
 
     def generate_response(self, query, system_prompt):
@@ -280,12 +374,13 @@ class ChatEngine:
         )
         return response.choices[0].message.content
 
-    def process_query(self, query, system_prompt):
+    def process_query(self, query, system_prompt, inputs):
         """Route the query and execute it with the appropriate tool or model"""
         route = self.route_query(query)
         if route in self.tools:
             print("Tool used:", route)
-            tool_response = self.run_with_tool(route, query)
+            tool_response = self.run_with_tool(route, inputs)
+            print("Tool Response: ",tool_response)
             query += "You just used tool to do something and here is the result" + tool_response
             response = self.generate_response(query, system_prompt)
         else:

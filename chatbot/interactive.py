@@ -144,7 +144,7 @@ class interactiveChat:
         
         
         print(f"Context: {local_user_prompt}\n")
-        response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt)
+        response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt, inputs=usr_input)
         self.back.send_to_space(response)
         # Debugging print to check the response
         # print(f"Generated response: {response}")
@@ -204,7 +204,9 @@ class interactiveChat:
             
         # Construct the summarize prompt
         summarize_prompt = f"""
-        User input is a log file of a chat between you, as March 7th, and the user. Each log is structured as follows:
+        You are an advanced and intelligent AI designed to do summarization task.
+        
+        User input is a log file of a chat between character, March 7th, and the user. Each log is structured as follows:
         [Timestamp] User: user_response (emotion) Character: character_response (emotion) Off-topic: yes/no Response quality: good/bad
 
         Summarize the conversation, focusing on:
@@ -213,8 +215,10 @@ class interactiveChat:
         - Whether responses were off-topic or repetitive.
         - Retain the most recent and important memory, and exclude bad or repetitive responses.
 
-        Keep the summary under 200 tokens, with a focus on important details and without including irrelevant or repetitive responses.
+        Your token limit is 100, focus on telling what happen, important details, and exclude irrelevant or repetitive responses.
+        make summary in paragraphs.
         
+        Most recent chat's are more important than others so compare the timestamps.
         Summarize:
         """
         

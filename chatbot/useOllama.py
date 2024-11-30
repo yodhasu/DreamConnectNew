@@ -10,7 +10,7 @@ class ChatEngine:
         """
         Initialize the ChatOllama client with the specified model and base URL.
         """
-        self.client = ChatOllama(model=model, temperature=0, repeat_penalty=1, top_p=0.5, top_k=1)
+        self.client = ChatOllama(model=model, temperature=0, repeat_penalty=1, top_p=0.5, top_k=1, num_predict=500)
 
         # Available tools
         self.tools = {

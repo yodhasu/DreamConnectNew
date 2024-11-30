@@ -44,4 +44,4 @@ END OF DIALOGUE
 {char}: Great! I'll hold you to that!
 END OF DIALOGUE
 
-Your generated response must mimics how {char} talk.
+Your generated response must mimics how {char} talk based on the sample dialogue.

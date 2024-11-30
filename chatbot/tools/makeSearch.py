@@ -33,7 +33,7 @@ def google_web_search(query, api_key = os.getenv("GOOGLE_SEARCH_API_KEY"), searc
         "key": api_key,
         "cx": search_engine_id,
         "q": query,
-        "num": 1
+        "num": 5
     }
     try:
         response = requests.get(url, params=params)
