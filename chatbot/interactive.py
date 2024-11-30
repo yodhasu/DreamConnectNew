@@ -1,6 +1,8 @@
 import os
 import re
 import stat
+
+from numpy import character
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -101,28 +103,34 @@ class interactiveChat:
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
         # auto update memory logs
-        if len(self.logger.get_context_log()) > 20:
+        if len(self.logger.get_context_log()) == 15:
             self.save_logs()
         # get prompt
         self.getPromptFromDir()
         # get memory
-        curr_memory = "Previous memory:"+ "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
+        curr_memory = "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
         # identify user's intention
         intention = self.intentIdentifier(usr_input, self.response, api_key)
         # check for images in user input
         img_summarized = ""
         status, img = self.filterFilepath(usr_input)
-        print(status, img)
+        # print(status, img)
         # Formating input to prompt
         
         local_system_prompt = self.system_prompt
         local_user_prompt = self.user_prompt
         
+        local_system_prompt = local_system_prompt.format(
+            user = self.user,
+            userbio = self.bio,
+            char = self.character
+        )
+        
         local_user_prompt=local_user_prompt.format(
             intention = intention,
             date = str(datetime.now()),
             time = self.get_time_of_day(),
-            memory = curr_memory or "",
+            memory = curr_memory or "None",
             context = self.logger.get_context_log() or self.context,
             affection = self.affection,
             question = usr_input
@@ -197,21 +205,21 @@ class interactiveChat:
         
         retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
         
-        return retrieved_memory
+        return retrieved_memory if memory != "" else ""
     
-    def intentIdentifier(self, user_input, api_key):
+    def intentIdentifier(self, user_input, char_response, api_key):
         params = {
-            'temperature': 0,
+            'temperature': 0.2,
             'max_tokens': 100,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
-        prompt = """
-        Here is the previous response of the character: {character_response}
+        prompt = f"""
+        Here is the previous response of the character: {char_response}
         You may or may not use it to help your task.
         
         Your task is:
-        Identify the intention of the user's input
+        Identify the intention of the user's input.
         """
         self.defineEngine(api_key=api_key, parameter=params)
         intent = self.chatClient.generate_response(context=prompt, rules=user_input)

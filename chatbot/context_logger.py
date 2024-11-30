@@ -8,15 +8,23 @@ from datetime import datetime
 import difflib
 import os
 
-nltk.data.clear_cache()
-# Download necessary NLTK resources
-nltk.download('punkt')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('maxent_ne_chunker_tab')
-nltk.download('words')
-nltk.download('vader_lexicon')
+# nltk.data.clear_cache()
+# # Download necessary NLTK resources
+# nltk.download('punkt')
+# nltk.download('averaged_perceptron_tagger')
+# nltk.download('maxent_ne_chunker')
+# nltk.download('maxent_ne_chunker_tab')
+# nltk.download('words')
+# nltk.download('vader_lexicon')
 
+required_nltk_resources = [
+    'punkt', 'averaged_perceptron_tagger', 'maxent_ne_chunker', 'words', 'vader_lexicon'
+]
+for resource in required_nltk_resources:
+    try:
+        nltk.data.find(resource)
+    except LookupError:
+        nltk.download(resource)
 # Load SpaCy model
 nlp = spacy.load("en_core_web_sm")
 

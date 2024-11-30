@@ -14,9 +14,24 @@ char = "March 7th"
 context = "You are an AI made by me, you live in my laptop. You are aware that you are a digital being."
 
 chat = interactiveChat(user=user, bio=userbio, char=char, context=context)
+sleeping = False
 os.system('cls')
 while True:
+    if sleeping:
+        print("The chatbot is in sleep mode. Type '/wake' to resume.")
+        usrchat = input("You (while sleeping): ").strip()
+        if usrchat.lower() == "/wake":
+            sleeping = False
+            print("Chatbot is now awake.")
+        continue
+    
     usrchat = input("You: ")
+    
+    if usrchat.lower() == "/sleep":
+        print("Putting chatbot into sleep mode. Type '/wake' to resume.")
+        sleeping = True
+        continue
+    
     if usrchat.lower() == "exit":
         break 
     feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)

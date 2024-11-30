@@ -22,6 +22,7 @@ function createWindow() {
         height: 735,
         frame: false, // Optional: Remove the window frame
         transparent: true, // Optional: Enable transparency
+        backgroundColor: '#00000000', // Fully transparent background
         x: width - 300, // Position at the right edge of the screen
         y: 50,
         webPreferences: {
@@ -33,42 +34,32 @@ function createWindow() {
     });
 
     win.loadURL(`http://localhost:${PORT}/index.html`);
+    win.webContents.setBackgroundThrottling(true);
     win.on('close', (event) => {
       event.preventDefault();
         win.hide(); // Hide the window
     });
 
     // Create the system tray icon
-    const trayIconPath = path.join(__dirname, 'assets', 'tray-icon.png'); // Path to your tray icon
+    const trayIconPath = path.join(__dirname, 'assets', 'tray-icon.png');
     tray = new Tray(trayIconPath);
-    
-    // Create a context menu for the tray icon
+
     const contextMenu = Menu.buildFromTemplate([
-        {
-            label: 'Open',
-            click: () => {
-                win.show(); // Show the window when "Open" is clicked
-            }
-        },
-        {
-            label: 'Quit',
-            click: () => {
-                app.quit(); // Quit the app when "Quit" is clicked
-            }
-        }
+        { label: 'Open', click: () => win.show() },
+        { label: 'Quit', click: () => app.quit() },
     ]);
-
-    // Set the context menu for the tray icon
     tray.setContextMenu(contextMenu);
-
-    // Add a tooltip to the tray icon
     tray.setToolTip('My Electron App');
+    tray.on('double-click', () => win.show());
 
     // Double-click on the tray icon to show the window
     tray.on('double-click', () => {
         win.show(); // Show the window when the tray icon is double-clicked
     });
 }
+
+app.commandLine.appendSwitch('enable-transparent-visuals');
+app.commandLine.appendSwitch('disable-gpu-vsync');
 
 app.whenReady().then(createWindow);
 
