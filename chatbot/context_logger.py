@@ -1,3 +1,4 @@
+import json
 import nltk
 import spacy
 from nltk.tokenize import word_tokenize
@@ -177,9 +178,9 @@ class ContextLogger:
         """
         Saves the context log to a cache file.
         """
-        with open("chatbot/logs/cache.txt", "w") as file:
-            for entry in self.context_log:
-                file.write(f"{entry}\n")
+        with open("chatbot/logs/cache.json", "w") as file:
+                # file.write(f"{entry}\n")
+                json.dump(self.context_log, file, indent=4)
         self.context_log.clear()
         self.previous_responses.clear()
 
@@ -188,7 +189,6 @@ class ContextLogger:
         Saves the context log to a file.
         """
         with open(filename, "w") as file:
-            for entry in self.context_log:
-                file.write(f"{entry}\n")
+            json.dump(self.context_log, file, indent=4)
         self.context_log.clear()
         self.previous_responses.clear()

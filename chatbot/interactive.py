@@ -1,8 +1,5 @@
 import os
 import re
-import stat
-
-from numpy import character
 from chatbot import useOllama
 from chatbot import useGroq
 from chatbot import useOpenAI
@@ -11,6 +8,7 @@ from chatbot import context_logger
 from datetime import datetime
 from urlextract import URLExtract
 import base64
+import json
 
 extractor = URLExtract()
 class interactiveChat:
@@ -74,11 +72,11 @@ class interactiveChat:
         self.chatClient = None
         match self.engine:
             case "ollama":
-                self.chatClient = useOllama.ChatEngine(model=chat_model, params=parameter)
+                self.chatClient = useOllama.ChatEngine()
             case "groq":
-                self.chatClient = useGroq.ChatEngine(api_key=api_key, model=chat_model, params=parameter)
+                self.chatClient = useGroq.ChatEngine(api_key=api_key)
             case "openai":
-                self.chatClient = useOpenAI.ChatEngine(api_key=api_key, model=chat_model, params=parameter)
+                self.chatClient = useOpenAI.ChatEngine(api_key=api_key)
             case _:
                 raise ValueError("Wrong engine/engine provided")
     
@@ -103,6 +101,8 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None):
+        # define engine
+        self.defineEngine(api_key=api_key)
         # auto update memory logs
         if len(self.logger.get_context_log()) == 15:
             self.save_logs()
@@ -141,10 +141,10 @@ class interactiveChat:
             img_summarized = self.imageVision(img)
             local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
         
-        self.defineEngine(api_key=api_key)
+        
         
         print(f"Context: {local_user_prompt}\n")
-        response = self.chatClient.generate_response(context=local_user_prompt, rules=local_system_prompt)
+        response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt)
         self.back.send_to_space(response)
         # Debugging print to check the response
         # print(f"Generated response: {response}")
@@ -164,60 +164,68 @@ class interactiveChat:
     def save_logs(self):
         filename = f"chatbot/logs/logfile_{str(datetime.now())}".replace(":", "-")
         filename = filename.replace(".", "-")
-        self.logger.save_context_log(filename=f"{filename}.txt")
-    
-    def retrieve_memory(self, api_key = None, log_dir = "chatbot/logs/", max_logs = 5):
-        memory = []
-    
-        # Get a list of all log files sorted by name
+        self.logger.save_context_log(filename=f"{filename}.json")
+
+    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=3):
+        memory = ""
+        
+        chatengine = useOllama.ChatEngine()
+
+        # Get a list of all log files sorted by name (only JSON files now)
         log_files = sorted(
-            [os.path.join(log_dir, log) for log in os.listdir(log_dir) if log.endswith(".txt")],
-            reverse=True  # Sort by name in descending order
+            [os.path.join(log_dir, log) for log in os.listdir(log_dir) if log.endswith(".json")],
+            reverse=True  # Sort by name in descending order (latest logs first)
         )
+        
         # Limit to the most recent `max_logs` files
         recent_logs = log_files[:max_logs]
+        
+        # Process the most recent logs
         for log_path in recent_logs:
-            print("Try to print path")
-            print(log_path)
+            print("Processing log file at path:", log_path)
             with open(log_path, "r") as logfile:
-                log_content = logfile.read()
-                memory.append(log_content)
-        memory = "\n".join(memory)
-        
-        params = {
-            'temperature': 0,
-            'max_tokens': 200,
-            'frequency_penalty': 1.7,
-            'presence_penalty': 1.7,
-        }
-        
-        self.defineEngine(api_key=api_key, parameter=params)
-        # print(memory)
+                # Read the log entries (now they are in JSON format)
+                logs = json.load(logfile)  # This loads the logs as a list of dictionaries
+                
+                # Iterate through each log entry and format it
+                for log in logs:
+                    # Create a clean format for each log entry
+                    log_text = f"""
+                    Timestamp: {log['Timestamp']}
+                    User message: {log['User message']}
+                    User emotion: {log['User emotion']}
+                    AI Response: {log['AI Response']}
+                    AI emotion: {log['AI emotion']}
+                    Off-topic response: {log['Off topic response']}
+                    Response quality: {log['Overall Response quality']}
+                    Repetitive response: {log['Repetitive response']}
+                    """
+                    memory += log_text + "\n"
+            
+        # Construct the summarize prompt
         summarize_prompt = f"""
-        "User input is a log file of a chat between you, as {self.charater}, and the user. The log is formated as follows:
-        [Timestamp] User: user_response (tone of response)Character: character_response (tone of response)Off-topic: yes/noResponse indicator: good/bad
+        User input is a log file of a chat between you, as March 7th, and the user. Each log is structured as follows:
+        [Timestamp] User: user_response (emotion) Character: character_response (emotion) Off-topic: yes/no Response quality: good/bad
 
-        Tell what already happened in the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
-        If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
+        Summarize the conversation, focusing on:
+        - User and AI interactions, key topics discussed.
+        - Emotional tone and user intent.
+        - Whether responses were off-topic or repetitive.
+        - Retain the most recent and important memory, and exclude bad or repetitive responses.
+
+        Keep the summary under 200 tokens, with a focus on important details and without including irrelevant or repetitive responses.
         
-        Most recent contents are more important than the others, you can compare the timestamps in the logs to do your job.
-
-        Keep the answer under 200 tokens.
-        the answer must be in paragraph.
-        DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
+        Summarize:
         """
         
-        retrieved_memory = self.chatClient.generate_response(context=memory, rules=summarize_prompt)
+        # Use the summarizer model to generate the summary of the memory
+        retrieved_memory = chatengine.generate_response(memory, summarize_prompt)
         
         return retrieved_memory if memory != "" else ""
+
     
     def intentIdentifier(self, user_input, char_response, api_key):
-        params = {
-            'temperature': 0.1,
-            'max_tokens': 100,
-            'frequency_penalty': 1.7,
-            'presence_penalty': 1.7,
-        }
+        
         prompt = f"""
         This is the character's previous input : {char_response}
         Character's name: {self.charater}
@@ -233,8 +241,8 @@ class interactiveChat:
         DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         """
         system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 50 - 100 token"
-        self.defineEngine(api_key=api_key, parameter=params)
-        intent = self.chatClient.generate_response(context=prompt, rules=system_prompt)
+
+        intent = self.chatClient.generate_response_for_utils(context=prompt, rules=system_prompt)
         return intent
     
     
