@@ -32,7 +32,7 @@ call venv\Scripts\activate
 
 :: Step 5: Upgrade pip
 echo Upgrading pip...
-python -m pip install --upgrade pip
+python -m pip install pip==23.0.1
 
 :: Step 6: Define and install dependencies
 echo Installing dependencies...
@@ -59,6 +59,7 @@ echo Installing dependencies...
     echo tqdm
     echo urlextract
     echo gensim
+    echo jokeapi
 ) > temp_requirements.txt
 
 :: Step 7: Install packages except torch and torchaudio
@@ -75,7 +76,7 @@ for /f "delims=" %%p in (temp_requirements.txt) do (
 
 :: Step 8: Install torch and torchaudio with CUDA support
 echo Installing torch and torchaudio with CUDA support...
-pip install torch==2.1.0+cu118 torchaudio==2.1.0+cu118 -f https://download.pytorch.org/whl/torch_stable.html
+pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 :: Remove the temporary file
 del temp_requirements.txt

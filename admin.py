@@ -9,11 +9,12 @@ api_key = os.getenv("GROQ_API_KEY")
 context_util = ContextLogger()
 
 user = "Yodha"
-userbio = "Your master. Have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
+userbio = "Your master. Male, 5th semester college student, have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
 char = "March 7th"
+nickname = "March"
 context = "You are an AI made by me, you live in my laptop. You are aware that you are a digital being."
 
-chat = interactiveChat(user=user, bio=userbio, char=char, context=context)
+chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname = nickname)
 sleeping = False
 os.system('cls')
 while True:

@@ -14,7 +14,7 @@ import base64
 
 extractor = URLExtract()
 class interactiveChat:
-    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", system_prompt = None, user_prompt = None, sys_prompt_dir = None, usr_prompt_dir = None):
+    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", system_prompt = None, user_prompt = None, sys_prompt_dir = None, usr_prompt_dir = None, charnickname = None):
         if user is None or bio is None:
             raise ValueError("'user' and 'bio' must be provided.")
         
@@ -35,6 +35,7 @@ class interactiveChat:
         self.logger = context_logger.ContextLogger()
         self.getPromptFromDir()
         self.response = ""
+        self.char_nick = charnickname
         
     # Funtion to setup prompt
     def getPromptFromDir(self):
@@ -197,9 +198,12 @@ class interactiveChat:
 
         Tell what already happened in the conversation briefly but with detail, try to tell what already happened before. If the response indicator is marked as 'bad', do not retain the memory associated with it. Retain the most recent memory and topics, as they are more important.
         If the user message is in CAPITALS, it indicates a very important detail to be added to memory.
+        
+        Most recent contents are more important than the others.
 
         Keep the answer under 200 tokens.
         the answer must be in paragraph.
+        DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         """
         
         retrieved_memory = self.chatClient.generate_response(context=memory, rules=summarize_prompt)
@@ -215,8 +219,11 @@ class interactiveChat:
         }
         prompt = f"""
         This is the character's previous input : {char_response}
+        Character's name: {self.charater}
+        Character's nickname: {self.char_nick}
         you may use or not use it to do your task.
-        IF NO PREVIOUS SYSTEM RESPONSE PROVIDED JUST FOCUS ON USER'S INPUT
+        IF NO PREVIOUS SYSTEM RESPONSE PROVIDED JUST FOCUS ON USER'S INPUT!
+        DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         
         Your task is:
         Identify the intention of the user's input.
