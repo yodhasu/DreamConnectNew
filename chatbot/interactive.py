@@ -10,7 +10,6 @@ from chatbot import sendToBackend
 from chatbot import context_logger
 from datetime import datetime
 from urlextract import URLExtract
-from transformers import pipeline
 import base64
 
 extractor = URLExtract()
@@ -123,7 +122,7 @@ class interactiveChat:
         local_system_prompt = local_system_prompt.format(
             user = self.user,
             userbio = self.bio,
-            char = self.character
+            char = self.charater
         )
         
         local_user_prompt=local_user_prompt.format(
@@ -203,26 +202,30 @@ class interactiveChat:
         the answer must be in paragraph.
         """
         
-        retrieved_memory = self.chatClient.generate_response(context=summarize_prompt, rules=memory)
+        retrieved_memory = self.chatClient.generate_response(context=memory, rules=summarize_prompt)
         
         return retrieved_memory if memory != "" else ""
     
     def intentIdentifier(self, user_input, char_response, api_key):
         params = {
-            'temperature': 0.2,
+            'temperature': 0.1,
             'max_tokens': 100,
             'frequency_penalty': 1.7,
             'presence_penalty': 1.7,
         }
         prompt = f"""
-        Here is the previous response of the character: {char_response}
-        You may or may not use it to help your task.
+        This is the character's previous input : {char_response}
+        you may use or not use it to do your task.
+        IF NO PREVIOUS SYSTEM RESPONSE PROVIDED JUST FOCUS ON USER'S INPUT
         
         Your task is:
         Identify the intention of the user's input.
+        
+        User's input {user_input}
         """
+        system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 50 - 100 token"
         self.defineEngine(api_key=api_key, parameter=params)
-        intent = self.chatClient.generate_response(context=prompt, rules=user_input)
+        intent = self.chatClient.generate_response(context=prompt, rules=system_prompt)
         return intent
     
     

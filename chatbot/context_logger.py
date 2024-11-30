@@ -114,6 +114,14 @@ class ContextLogger:
         """
         Processes a single dialogue and logs it with context information, including off-topic detection.
         """
+        # check for cached logs
+        try:
+            with open("chatbot/logs/cache.txt", "r") as file:
+                for logs in file:
+                    self.context_log.append(logs)
+            os.remove("chatbot/logs/cache.txt")
+        except:
+            pass
         # Detect emotion and extract entities from both user and character responses
         dict_sentences = {}
         entities_user = self.extract_named_entities(user_message)
@@ -150,7 +158,7 @@ class ContextLogger:
             "Off topic response" : 'Yes' if off_topic else 'no',
             "Response length" : response_length if response_length else 'Good length',
             "Repetitive response" : repetitiveness if repetitiveness else 'Not repetitive',
-            "Overall Response quality" : response_quality
+            "Overall Response quality" : response_quality+' response'
         }
         # Add the dialogue to the context log
         self.context_log.append(sentence)
@@ -159,7 +167,21 @@ class ContextLogger:
         """
         Returns the full context log as a list of sentences.
         """
-        return self.context_log
+        converted_log = ""
+        for logs_dict in self.context_log:
+            converted_log += f"User: {logs_dict['User message']}; Your respond: {logs_dict['AI Response']}; Response quality: {logs_dict['Overall Response quality']}; Reason: {logs_dict['Repetitive response']}\n"
+        
+        return converted_log
+
+    def cache_log(self):
+        """
+        Saves the context log to a cache file.
+        """
+        with open("chatbot/logs/cache.txt", "w") as file:
+            for entry in self.context_log:
+                file.write(f"{entry}\n")
+        self.context_log.clear()
+        self.previous_responses.clear()
 
     def save_context_log(self, filename):
         """

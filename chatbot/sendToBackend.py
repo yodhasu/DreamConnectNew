@@ -1,6 +1,12 @@
 from transformers import pipeline
 import requests
+import warnings
 
+# Suppress all warnings (use carefully)
+warnings.filterwarnings("ignore")
+
+# Or suppress specific warnings
+warnings.filterwarnings("ignore", message="You seem to be using the pipelines sequentially on GPU.")
 class backend():
     def __init__(self):
         try:

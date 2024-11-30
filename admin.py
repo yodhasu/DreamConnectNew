@@ -18,6 +18,7 @@ sleeping = False
 os.system('cls')
 while True:
     if sleeping:
+        context_util.cache_log()
         print("The chatbot is in sleep mode. Type '/wake' to resume.")
         usrchat = input("You (while sleeping): ").strip()
         if usrchat.lower() == "/wake":
