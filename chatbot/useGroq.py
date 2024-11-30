@@ -11,7 +11,7 @@ class ChatEngine:
             self.Client = Groq(api_key=api_key)
         else:
             raise ValueError("API KEY needed, please get your groq API key at https://console.groq.com/keys")
-        self.Model = model or "llama-3.1-70b-versatile"
+        self.Model = model or "llama3-70b-8192"
         self.Params = params or {
             'temperature': 0.95,
             'max_tokens': 300,
@@ -117,11 +117,11 @@ class ChatEngine:
                     )
                     for msg in message:
                         if msg["role"] == "user":
-                            msg["content"] += "summarize your findings in 100 to 200 tokens"
+                            msg["content"] += "summarize your findings in 50 to 150 tokens"
 
                 # Make a second API call with the updated conversation
                 second_response = self.Client.chat.completions.create(
-                    model="llama3-groq-8b-8192-tool-use-preview",
+                    model="llama-3.1-70b-versatile",
                     messages=message,
                     temperature=self.Params['temperature'],
                     max_tokens=self.Params['max_tokens'],
