@@ -34,6 +34,7 @@ class interactiveChat:
         self.getPromptFromDir()
         self.response = ""
         self.char_nick = charnickname
+        self.feedback = ""
         self.back.send_to_space(["neutral"])
         
     # Funtion to setup prompt
@@ -81,18 +82,12 @@ class interactiveChat:
                 raise ValueError("Wrong engine/engine provided")
     
     def classifyFeedback(self, text):
-        feedtext = ""
-        feedtext = text
-        if feedtext.lower() in ["y", "yes"]:
-            return "good"
-        elif feedtext.lower() in ["n", "no"]:
-            return "bad"
+        if text in ["y", "yes"]:
+            self.feedback = "good"
+        elif text in ["n", "no"]:
+            self.feedback= "bad"
         else:
-            return "neutral"
-    
-    def getFeedback(self):
-        usr_feed = input("Good? (y/n)").lower()
-        return usr_feed
+            self.feedback = "neutral"
     
     def imageVision(self, imgpath):
         print(f"Image path: {imgpath}")
@@ -155,18 +150,16 @@ class interactiveChat:
 
         print(f"\n{self.charater}: {response}\n")
         self.response = response
-        usr_feed = self.getFeedback()
-        classify = self.classifyFeedback(usr_feed)
-        self.logger.log_context(usr_input, response, classify)
+        self.logger.log_context(usr_input, response, self.feedback)
         self.context = self.logger.get_context_log()
-        return usr_feed
+        return response
     
     def save_logs(self):
         filename = f"chatbot/logs/logfile_{str(datetime.now())}".replace(":", "-")
         filename = filename.replace(".", "-")
         self.logger.save_context_log(filename=f"{filename}.json")
 
-    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=3):
+    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=1):
         memory = ""
         
         chatengine = useOllama.ChatEngine()
@@ -204,22 +197,12 @@ class interactiveChat:
             
         # Construct the summarize prompt
         summarize_prompt = f"""
-        You are an advanced and intelligent AI designed to do summarization task.
+        You are {self.charater} also called as {self.char_nick}.
         
-        User input is a log file of a chat between character, March 7th, and the user. Each log is structured as follows:
-        [Timestamp] User: user_response (emotion) Character: character_response (emotion) Off-topic: yes/no Response quality: good/bad
-
-        Summarize the conversation, focusing on:
-        - User and AI interactions, key topics discussed.
-        - Emotional tone and user intent.
-        - Whether responses were off-topic or repetitive.
-        - Retain the most recent and important memory, and exclude bad or repetitive responses.
-
-        Your token limit is 100, focus on telling what happen, important details, and exclude irrelevant or repetitive responses.
-        make summary in paragraphs.
-        
-        Most recent chat's are more important than others so compare the timestamps.
-        Summarize:
+        You and I, {self.user}, also known as User are having a chat previously and you need to summarize it so you know:
+        - What happened.
+        - Important details.
+        - How you feel.
         """
         
         # Use the summarizer model to generate the summary of the memory
@@ -244,9 +227,9 @@ class interactiveChat:
         User's input {user_input}
         DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         """
-        system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 50 - 100 token"
+        system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 20 - 70 token"
 
-        intent = self.chatClient.generate_response_for_utils(context=prompt, rules=system_prompt)
+        intent = self.chatClient.generate_response_for_utils(context=user_input, rules=system_prompt)
         return intent
     
     
