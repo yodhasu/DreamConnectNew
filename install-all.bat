@@ -33,6 +33,7 @@ call venv\Scripts\activate
 :: Step 5: Upgrade pip
 echo Upgrading pip...
 python -m pip install pip==23.0.1
+python -m pip install pipenv
 
 :: Step 6: Define and install dependencies
 echo Installing dependencies...
@@ -50,7 +51,6 @@ echo Installing dependencies...
     echo ollama
     echo langchain
     echo langchain_ollama
-    echo g4f
     echo openai
     echo tensorflow
     echo tf-keras
@@ -68,7 +68,7 @@ for /f "delims=" %%p in (temp_requirements.txt) do (
     python -c "import %%p" 2>nul
     if errorlevel 1 (
         echo Package %%p not found. Installing...
-        pip install %%p
+        pipenv install %%p
     ) else (
         echo Package %%p is already installed. Skipping...
     )
@@ -76,14 +76,10 @@ for /f "delims=" %%p in (temp_requirements.txt) do (
 
 :: Step 8: Install torch and torchaudio with CUDA support
 echo Installing torch and torchaudio with CUDA support...
-pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pipenv install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
 :: Remove the temporary file
 del temp_requirements.txt
-
-:: Step 9: Install NLTK data
-echo Downloading NLTK data...
-python -m nltk.downloader punkt
 
 echo Setup complete! To activate the virtual environment, run "venv\Scripts\activate".
 echo To run your programs, use "python main.py" or "python backflask.py".

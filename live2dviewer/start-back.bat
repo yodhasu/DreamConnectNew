@@ -1,5 +1,3 @@
 @echo off
-
-call ..\venv\Scripts\activate
 cd backend
-python backflask.py
+pipenv run python backflask.py

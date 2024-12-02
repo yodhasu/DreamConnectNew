@@ -1,5 +1,5 @@
 from rvc_python.infer import RVCInference
-from chatbot.voiceCloner import edgexrvc
+# from chatbot.voiceCloner import edgexrvc
 
 rvc = RVCInference(device="cuda")
 # rvc.f0up_key = 3 parameter for reine
