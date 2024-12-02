@@ -366,11 +366,10 @@ class ChatEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
             ],
-            temperature=0.75,
+            temperature=0.95,
             max_tokens=300,
-            frequency_penalty=1.7,
-            top_p=0.5,
-            presence_penalty=0.5
+            frequency_penalty=1.9,
+            presence_penalty=0.7
         )
         return response.choices[0].message.content
 

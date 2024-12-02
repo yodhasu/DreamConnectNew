@@ -6,7 +6,7 @@ from chatbot.tools.makeCalculations import calculate
 from chatbot.tools.makeSearch import google_web_search
 
 class ChatEngine:
-    def __init__(self, model="llama3.2:1b", base_url="http://localhost:8000"):
+    def __init__(self, model="llama3:latest", base_url="http://localhost:8000"):
         """
         Initialize the ChatOllama client with the specified model and base URL.
         """

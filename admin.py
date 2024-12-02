@@ -76,6 +76,9 @@ if "chatlogs" not in st.session_state:
 
 if "chat" not in st.session_state:
     st.session_state.chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname=nickname)
+    
+if "last_prompt" not in st.session_state:
+    st.session_state.last_prompt = None
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -84,6 +87,7 @@ for message in st.session_state.messages:
 # user message
 prompt = st.chat_input("Type a message")
 if prompt:
+    st.session_state.last_prompt = prompt
     if prompt.lower() == "/exit":
         st.session_state.chat.save_logs()
         st.warning("Chatlog saved succesfully! You may close the app by stopping or pressing ctrl + c on your cmd")
@@ -104,3 +108,21 @@ if prompt:
         chat_quality = 1
     st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
     st.session_state.chatlogs.log_context(user_message=prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")
+
+# Regenerate response button
+if st.session_state.last_prompt and st.button("Regenerate Response"):
+    # Generate new response for the last prompt
+    response = st.session_state.chat.makeChat(usr_input=st.session_state.last_prompt, api_key=api_key)
+
+    # Display regenerated AI response
+    with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
+        st.markdown(f"**(Regenerated)** {response}")
+    st.session_state.messages.pop()
+    st.session_state.messages.append({"role": "ai", "content": f"**(Regenerated)** {response}"})
+
+    # Log regenerated response
+    chat_quality = st.feedback(options='thumbs')
+    if chat_quality == None:
+        chat_quality = 1
+    st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
+    st.session_state.chatlogs.log_context(user_message=st.session_state.last_prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")

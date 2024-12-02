@@ -197,16 +197,30 @@ class interactiveChat:
             
         # Construct the summarize prompt
         summarize_prompt = f"""
-        You are {self.charater} also called as {self.char_nick}.
+        You are {self.charater} also known as {self.char_nick}, an intelligent and advanced AI made by user.
         
-        You and I, {self.user}, also known as User are having a chat previously and you need to summarize it so you know:
+        I, {self.user}, also known as User am your friend and creator, both of us were having a chat previously and the chat history was saved inside a log with format:
+            "Timestamp",
+            "User message",
+            "User emotion",
+            "AI Response",
+            "AI emotion",
+            "Off topic response",
+            "Response length",
+            "Repetitive response",
+            "Overall Response quality"
+        You need to summarize it so you can know:
         - What happened.
         - Important details.
         - How you feel.
+        
+        make summarization on paragraph so you can easily remember it.
+        
+        your max output token are 100 token.
         """
         
         # Use the summarizer model to generate the summary of the memory
-        retrieved_memory = chatengine.generate_response(memory, summarize_prompt)
+        retrieved_memory = chatengine.generate_response(query=memory, system_prompt=summarize_prompt)
         
         return retrieved_memory if memory != "" else ""
 
