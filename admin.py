@@ -44,16 +44,20 @@
 # chat.save_logs()
 
 import streamlit as st
-from sympy import use
+import base64
 from chatbot.interactive import interactiveChat
 from chatbot.context_logger import ContextLogger
 from dotenv import load_dotenv
 import os
 
+def encode_image(image_path):
+    # with open(image_path, "rb") as image_file:
+    base64.b64encode(image_path.read()).decode('utf-8')
+
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
-
+local_image = ""
 # Initialize chatbot
 context_util = ContextLogger()
 user = "Yodha"
@@ -83,7 +87,10 @@ if "last_prompt" not in st.session_state:
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
+# file handling
+filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'])
+if filelike:
+    local_image = f"data:image/jpeg;base64,{encode_image(filelike)}"
 # user message
 prompt = st.chat_input("Type a message")
 if prompt:
@@ -97,7 +104,7 @@ if prompt:
         st.markdown(prompt)
     # add user message to session state
     st.session_state.messages.append({"role": "user", "content": prompt})
-    response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key)
+    response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
     # chatbot message
     with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
         st.markdown(response)
@@ -112,12 +119,12 @@ if prompt:
 # Regenerate response button
 if st.session_state.last_prompt and st.button("Regenerate Response"):
     # Generate new response for the last prompt
+    st.session_state.messages.pop()
     response = st.session_state.chat.makeChat(usr_input=st.session_state.last_prompt, api_key=api_key)
 
     # Display regenerated AI response
     with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
         st.markdown(f"**(Regenerated)** {response}")
-    st.session_state.messages.pop()
     st.session_state.messages.append({"role": "ai", "content": f"**(Regenerated)** {response}"})
 
     # Log regenerated response

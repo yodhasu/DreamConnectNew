@@ -95,7 +95,7 @@ class interactiveChat:
         return result
     
     # chat function
-    def makeChat(self, usr_input = None, api_key = None):
+    def makeChat(self, usr_input = None, api_key = None, imagelike = None):
         # define engine
         self.defineEngine(api_key=api_key)
         # auto update memory logs
@@ -109,7 +109,7 @@ class interactiveChat:
         intention = self.intentIdentifier(usr_input, self.response, api_key)
         # check for images in user input
         img_summarized = ""
-        status, img = self.filterFilepath(usr_input)
+        # status, img = self.filterFilepath(usr_input)
         # print(status, img)
         # Formating input to prompt
         
@@ -132,8 +132,8 @@ class interactiveChat:
             question = usr_input
         )
         # add image summary to the prompt
-        if status != 0:
-            img_summarized = self.imageVision(img)
+        if imagelike:
+            img_summarized = self.imageVision(imagelike)
             local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
         
         
@@ -229,6 +229,7 @@ class interactiveChat:
         
         prompt = f"""
         This is the character's previous input : {char_response}
+        if there aren't any previous input it means that this is the first chat.
         Character's name: {self.charater}
         Character's nickname: {self.char_nick}
         you may use or not use it to do your task.
@@ -243,7 +244,7 @@ class interactiveChat:
         """
         system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 20 - 70 token"
 
-        intent = self.chatClient.generate_response_for_utils(context=user_input, rules=system_prompt)
+        intent = self.chatClient.generate_response_for_utils(context=prompt, rules=system_prompt)
         return intent
     
     

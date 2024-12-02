@@ -308,7 +308,7 @@ class ChatEngine:
     def run_with_tool(self, tool_name, query):
         """Handle queries requiring tools using TOOL_USE_MODEL"""
         tool_messages = [
-            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. uSE {tool_name} function to generate response"},
+            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. uSE {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
             {"role": "user", "content": query}
         ]
         response = self.client.chat.completions.create(
@@ -380,7 +380,7 @@ class ChatEngine:
             print("Tool used:", route)
             tool_response = self.run_with_tool(route, inputs)
             print("Tool Response: ",tool_response)
-            query += "You just used tool to do something and here is the result" + tool_response
+            system_prompt += "You just used tool to do something and here is the result:\n" + tool_response + "\nBy having the result you have the obligation to state and explain what you got!\n"
             response = self.generate_response(query, system_prompt)
         else:
             response = self.generate_response(query, system_prompt)
