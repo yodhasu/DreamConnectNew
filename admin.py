@@ -52,7 +52,7 @@ import os
 
 def encode_image(image_path):
     # with open(image_path, "rb") as image_file:
-    base64.b64encode(image_path.read()).decode('utf-8')
+    return base64.b64encode(image_path.read()).decode('utf-8')
 
 # Load environment variables
 load_dotenv()
@@ -105,6 +105,7 @@ if prompt:
     # add user message to session state
     st.session_state.messages.append({"role": "user", "content": prompt})
     response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
+    filelike.close()
     # chatbot message
     with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
         st.markdown(response)
