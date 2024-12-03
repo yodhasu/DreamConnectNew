@@ -105,7 +105,10 @@ if prompt:
     # add user message to session state
     st.session_state.messages.append({"role": "user", "content": prompt})
     response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
-    filelike.close()
+    try:
+        filelike.close()
+    except:
+        pass
     # chatbot message
     with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
         st.markdown(response)
