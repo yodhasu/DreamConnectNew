@@ -43,6 +43,7 @@
 #         feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)
 # chat.save_logs()
 
+from flask import session
 import streamlit as st
 import base64
 from chatbot.interactive import interactiveChat
@@ -58,6 +59,7 @@ def encode_image(image_path):
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
 local_image = ""
+filelike = None
 # Initialize chatbot
 context_util = ContextLogger()
 user = "Yodha"
@@ -82,58 +84,75 @@ if "chat" not in st.session_state:
     st.session_state.chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname=nickname)
     
 if "last_prompt" not in st.session_state:
-    st.session_state.last_prompt = None
+    st.session_state.last_prompt = ""
+
+if "is_clicked" not in st.session_state:
+    st.session_state.is_clicked = False
+
+if "user_msg" not in st.session_state:
+    st.session_state.usr_msg = ""
+
+if "ai_msg" not in st.session_state:
+    st.session_state.ai_msg = ""
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-# file handling
-filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'])
-if filelike:
-    local_image = f"data:image/jpeg;base64,{encode_image(filelike)}"
+
 # user message
 prompt = st.chat_input("Type a message")
-if prompt:
-    st.session_state.last_prompt = prompt
+
+if prompt or st.session_state.is_clicked:
+    if prompt:
+        st.session_state.usr_msg = prompt
+        st.session_state.last_prompt = prompt
+        st.session_state.is_clicked = False
+    else:
+        prompt = st.session_state.last_prompt
+    
+    
     if prompt.lower() == "/exit":
         st.session_state.chat.save_logs()
         st.warning("Chatlog saved succesfully! You may close the app by stopping or pressing ctrl + c on your cmd")
         st.stop()
     # declare user message
-    with st.chat_message("user"):
-        st.markdown(prompt)
-    # add user message to session state
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
+    if not st.session_state.is_clicked:    
+        with st.chat_message("user"):
+            st.markdown(prompt)
+        # add user message to session state
+        st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    # chatbot message
+    with st.chat_message("assistant", avatar="assets/character_logo/march7th.png"):
+        response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
+        st.session_state.ai_msg = response
+        st.markdown(response)
+        st.session_state.is_clicked = False
+    st.session_state.messages.append({"role": "assistant", "content": st.session_state.ai_msg})
     try:
         filelike.close()
     except:
         pass
-    # chatbot message
-    with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
-        st.markdown(response)
-    st.session_state.messages.append({"role": "ai", "content": response})
-    
-    chat_quality = st.feedback(options='thumbs')
-    if chat_quality == None:
-        chat_quality = 1
-    st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
-    st.session_state.chatlogs.log_context(user_message=prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")
+    if st.session_state.messages:
+        chat_quality = st.feedback(options='thumbs')
+        if chat_quality == None:
+            chat_quality = 1
+        st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
+        st.session_state.chatlogs.log_context(user_message=st.session_state.usr_msg, character_response=st.session_state.ai_msg, response_quality= "good" if chat_quality == 1 else "bad")
 
 # Regenerate response button
 if st.session_state.last_prompt and st.button("Regenerate Response"):
     # Generate new response for the last prompt
+    st.session_state.is_clicked = True
     st.session_state.messages.pop()
-    response = st.session_state.chat.makeChat(usr_input=st.session_state.last_prompt, api_key=api_key)
+    st.rerun()
 
-    # Display regenerated AI response
-    with st.chat_message("ai", avatar="assets/character_logo/march7th.png"):
-        st.markdown(f"**(Regenerated)** {response}")
-    st.session_state.messages.append({"role": "ai", "content": f"**(Regenerated)** {response}"})
 
-    # Log regenerated response
-    chat_quality = st.feedback(options='thumbs')
-    if chat_quality == None:
-        chat_quality = 1
-    st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
-    st.session_state.chatlogs.log_context(user_message=st.session_state.last_prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")
+print(st.session_state.usr_msg)
+print(st.session_state.ai_msg)
+
+
+# file handling
+filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'])
+if filelike:
+    local_image = f"data:image/jpeg;base64,{encode_image(filelike)}" 

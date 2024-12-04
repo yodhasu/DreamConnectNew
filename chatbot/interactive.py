@@ -159,7 +159,7 @@ class interactiveChat:
         filename = filename.replace(".", "-")
         self.logger.save_context_log(filename=f"{filename}.json")
 
-    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=1):
+    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=3):
         memory = ""
         
         chatengine = useOllama.ChatEngine()

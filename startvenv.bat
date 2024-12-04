@@ -1,5 +1,2 @@
 @echo off
-D:
-cd D:\backup project\DreamConnect
-
-start venv\Scripts\activate
+pipenv run streamlit run admin.py
