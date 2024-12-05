@@ -42,14 +42,15 @@
 #             break
 #         feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)
 # chat.save_logs()
-
-from flask import session
+# from voicelines import rvcsupport
 import streamlit as st
 import base64
 from chatbot.interactive import interactiveChat
 from chatbot.context_logger import ContextLogger
 from dotenv import load_dotenv
 import os
+
+# voice = rvcsupport.VoiceClone(timbre_blend=0.7, pitch_shift=3)
 
 def encode_image(image_path):
     # with open(image_path, "rb") as image_file:
@@ -94,6 +95,27 @@ if "user_msg" not in st.session_state:
 
 if "ai_msg" not in st.session_state:
     st.session_state.ai_msg = ""
+
+if "model_pth" not in st.session_state:
+    st.session_state.model_pth = ""
+
+if "model_index" not in st.session_state:
+    st.session_state.model_index = ""
+
+if "voice_opt" not in st.session_state:
+    st.session_state.voice_opt = False
+# Model location input for voiceline
+with st.sidebar:
+    model_path = st.text_input(label="model.pth location")
+    model_index = st.text_input(label="model.index location")
+    if st.toggle("Turn on voice line"):
+        st.session_state.voice_opt = True
+        st.session_state.model_pth = model_path
+        st.session_state.model_index = model_index
+
+# print(st.session_state.model_pth)
+# print(st.session_state.model_index)
+
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
@@ -128,6 +150,10 @@ if prompt or st.session_state.is_clicked:
         st.session_state.ai_msg = response
         st.markdown(response)
         st.session_state.is_clicked = False
+        # if st.session_state.voice_opt:
+        #     voice.define_model_and_index(model_path=st.session_state.model_pth, index_path=st.session_state.model_index)
+        #     voice.make_voice_line(input_text=response)
+            
     st.session_state.messages.append({"role": "assistant", "content": st.session_state.ai_msg})
     try:
         filelike.close()
