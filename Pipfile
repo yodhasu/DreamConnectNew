@@ -3,6 +3,11 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+url = "https://download.pytorch.org/whl/cu118"
+verify_ssl = true
+name = "downloadpytorch"
+
 [packages]
 absl-py = "==2.1.0"
 aiohappyeyeballs = "==2.4.4"
@@ -217,9 +222,9 @@ win32-setctime = "==1.1.0"
 wrapt = "==1.17.0"
 wsproto = "==1.2.0"
 yarl = "==1.18.0"
-torch = "*"
-torchvision = "*"
-torchaudio = "*"
+torchvision = {version = "*", index = "downloadpytorch"}
+torchaudio = {version = "*", index = "downloadpytorch"}
+torch = {version = "*", index = "downloadpytorch"}
 
 [dev-packages]
 ipykernel = "*"
