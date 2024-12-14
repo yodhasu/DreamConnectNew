@@ -12,7 +12,7 @@ import json
 
 extractor = URLExtract()
 class interactiveChat:
-    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", sys_prompt_dir = None, usr_prompt_dir = None, charnickname = None):
+    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", user_prompt = None, system_prompt = None, sys_prompt_dir = None, usr_prompt_dir = None, charnickname = None):
         if user is None or bio is None:
             raise ValueError("'user' and 'bio' must be provided.")
         
@@ -25,8 +25,8 @@ class interactiveChat:
         self.user = user
         self.bio = bio
         self.context = context or ""
-        self.system_prompt = ""
-        self.user_prompt = ""
+        self.system_prompt = system_prompt
+        self.user_prompt = user_prompt
         self.system_prompt_from_directory = sys_prompt_dir or "chatbot/system_prompt.txt"
         self.user_prompt_from_directory = usr_prompt_dir or "chatbot/user_prompt.txt"
         self.back = sendToBackend.backend()
@@ -96,7 +96,7 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None, imagelike = None):
-        curr_memory = ""
+        curr_memory = "None"
         
         # define engine
         self.defineEngine(api_key=api_key)
@@ -105,10 +105,10 @@ class interactiveChat:
             curr_memory = ""
             self.save_logs()
         # get memory
-        if curr_memory == "":
+        if curr_memory == "" or curr_memory == "None":
             curr_memory = "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
         # identify user's intention
-        intention = self.intentIdentifier(usr_input, self.response, api_key)
+        intention = self.intentIdentifier(usr_input, self.response, api_key, curr_memory)
         # check for images in user input
         img_summarized = ""
         # status, img = self.filterFilepath(usr_input)
@@ -174,6 +174,8 @@ class interactiveChat:
         
         # Limit to the most recent `max_logs` files
         recent_logs = log_files[:max_logs]
+        if len(recent_logs) == 0:
+            return "None"
         
         # Process the most recent logs
         for log_path in recent_logs:
@@ -230,9 +232,11 @@ class interactiveChat:
         return retrieved_memory if memory != "" else ""
 
     
-    def intentIdentifier(self, user_input, char_response, api_key):
+    def intentIdentifier(self, user_input, char_response, memory, api_key):
         
         prompt = f"""
+        This is the character and user's previous memory: {memory}
+        if the previous memory is None or not available, state that this is the first time character and user chat.
         This is the character's previous input : {char_response}
         if there aren't any previous input it means that this is the first chat.
         Character's name: {self.charater}

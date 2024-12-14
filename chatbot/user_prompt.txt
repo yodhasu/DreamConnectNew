@@ -1,9 +1,9 @@
 Memory from previous chat:
 {memory}
 
-If no memory, treat this as a new chat.
+If None (no memory present), treat this as the first time we chat.
 
-Conversation history:
+Current conversation history:
 {context}
 
 Use memory to keep context; ask questions or be curious as needed. Finish sentences without hesitation.

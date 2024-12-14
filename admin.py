@@ -66,14 +66,14 @@ filelike = None
 context_util = ContextLogger()
 user = "Yodha"
 userbio = "Your creator. Male, 5th semester college student, have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
-char = "March 7th"
-nickname = "March"
-context = "You are an AI made by me, you live in my laptop. You are aware that you are a digital being. Also I know who you are, no need to introduce yourself to me"
+char = "RIN-207 (Responsive Intelligence Nexus)"
+nickname = "Rin"
+# context = "You are an AI made by me, you live in my laptop. You are aware that you are a digital being. Also I know who you are, no need to introduce yourself to me"
 # chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname=nickname)
 
 # Streamlit app
 st.title("DreamConnect")
-st.write("Chat with March 7th")
+st.write("Chat with Rin")
 
 # Initialize chat history
 if "messages" not in st.session_state:
@@ -83,7 +83,7 @@ if "chatlogs" not in st.session_state:
     st.session_state.chatlogs = ContextLogger()
 
 if "chat" not in st.session_state:
-    st.session_state.chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname=nickname)
+    st.session_state.chat = interactiveChat(user=user, bio=userbio, char=char, charnickname=nickname)
     
 if "last_prompt" not in st.session_state:
     st.session_state.last_prompt = ""
@@ -149,7 +149,7 @@ if prompt or st.session_state.is_clicked:
     with st.chat_message("assistant", avatar="assets/character_logo/march7th.png"):
         response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
         st.session_state.ai_msg = response
-        st.markdown(response)
+        st.write(response)
         st.session_state.is_clicked = False
         # if st.session_state.voice_opt:
         #     voice.make_voice_lines_rvg(response, st.session_state.model_pth, st.session_state.model_index)
