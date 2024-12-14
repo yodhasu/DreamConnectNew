@@ -43,7 +43,7 @@
 #         feedback = chat.makeChat(usr_input=usrchat, api_key=api_key)
 # chat.save_logs()
 # from voicelines import rvcsupport
-from voicelines.rvcsupport import VoiceClone
+# from voicelines.rvcsupport import VoiceClone
 import streamlit as st
 import base64
 from chatbot.interactive import interactiveChat
@@ -51,7 +51,7 @@ from chatbot.context_logger import ContextLogger
 from dotenv import load_dotenv
 import os
 
-voice = VoiceClone(timbre_blend=0.7, pitch_shift=3)
+# voice = VoiceClone(timbre_blend=0.7, pitch_shift=3)
 
 def encode_image(image_path):
     # with open(image_path, "rb") as image_file:
@@ -151,8 +151,8 @@ if prompt or st.session_state.is_clicked:
         st.session_state.ai_msg = response
         st.markdown(response)
         st.session_state.is_clicked = False
-        if st.session_state.voice_opt:
-            voice.make_voice_lines_rvg(response, st.session_state.model_pth, st.session_state.model_index)
+        # if st.session_state.voice_opt:
+        #     voice.make_voice_lines_rvg(response, st.session_state.model_pth, st.session_state.model_index)
             
     st.session_state.messages.append({"role": "assistant", "content": st.session_state.ai_msg})
     try:

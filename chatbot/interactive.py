@@ -12,7 +12,7 @@ import json
 
 extractor = URLExtract()
 class interactiveChat:
-    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", system_prompt = None, user_prompt = None, sys_prompt_dir = None, usr_prompt_dir = None, charnickname = None):
+    def __init__(self, affection = 10, user=None, bio=None, context = None, char = "AI Girlfriend", chat_engines = "groq", sys_prompt_dir = None, usr_prompt_dir = None, charnickname = None):
         if user is None or bio is None:
             raise ValueError("'user' and 'bio' must be provided.")
         
@@ -25,8 +25,8 @@ class interactiveChat:
         self.user = user
         self.bio = bio
         self.context = context or ""
-        self.system_prompt = system_prompt
-        self.user_prompt = user_prompt
+        self.system_prompt = ""
+        self.user_prompt = ""
         self.system_prompt_from_directory = sys_prompt_dir or "chatbot/system_prompt.txt"
         self.user_prompt_from_directory = usr_prompt_dir or "chatbot/user_prompt.txt"
         self.back = sendToBackend.backend()
@@ -96,15 +96,17 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None, imagelike = None):
+        curr_memory = ""
+        
         # define engine
         self.defineEngine(api_key=api_key)
         # auto update memory logs
         if len(self.logger.get_context_log()) == 15:
+            curr_memory = ""
             self.save_logs()
-        # get prompt
-        self.getPromptFromDir()
         # get memory
-        curr_memory = "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
+        if curr_memory == "":
+            curr_memory = "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
         # identify user's intention
         intention = self.intentIdentifier(usr_input, self.response, api_key)
         # check for images in user input
@@ -215,6 +217,9 @@ class interactiveChat:
         - How you feel.
         
         make summarization on paragraph so you can easily remember it.
+        
+        IMPORTANT! Add this in last part of your summary:
+        Chat ended in [last_timestamp]
         
         your max output token are 100 token.
         """
