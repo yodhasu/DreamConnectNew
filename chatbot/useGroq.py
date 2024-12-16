@@ -292,7 +292,7 @@ class ChatEngine:
         response = self.client.chat.completions.create(
             model=self.ROUTING_MODEL,
             messages=[
-                {"role": "system", "content": "You are a routing assistant. Determine the correct tool based on the user query."},
+                {"role": "system", "content":" You are a routing assistant with this list of tools {self.tools}. Determine the correct tool based on the user query."},
                 {"role": "user", "content": routing_prompt}
             ],
             max_tokens=20,
@@ -308,7 +308,7 @@ class ChatEngine:
     def run_with_tool(self, tool_name, query):
         """Handle queries requiring tools using TOOL_USE_MODEL"""
         tool_messages = [
-            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. uSE {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
+            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got. Only use tools if the purpose is related with the tool functionalities, other than that skip the tools."},
             {"role": "user", "content": query}
         ]
         response = self.client.chat.completions.create(
