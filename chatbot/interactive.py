@@ -220,6 +220,9 @@ class interactiveChat:
         
         make summarization on paragraph so you can easily remember it.
         
+        Give examples of bad response from the logfile using this format:
+        Bad Response: response
+        
         IMPORTANT! Add this in last part of your summary:
         Chat ended in [last_timestamp]
         

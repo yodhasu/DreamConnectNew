@@ -243,7 +243,7 @@ class ChatEngine:
                 "type": "function",
                 "function": {
                     "name": "calculate",
-                    "description": "Evaluate or calculate basic math problems",
+                    "description": "ONLY TO Evaluate or calculate basic math problems, not for coding.",
                     "parameters": {
                         "type": "object",
                         "properties": {
@@ -284,6 +284,7 @@ class ChatEngine:
         If a specific tool is needed, respond with 'TOOL: <TOOL_NAME>'.
         Available tools are: {', '.join(self.tools.keys())}.
         If no tools are needed, respond with 'NO TOOL'.
+        no tools for coding.
 
         User query: {query}
 
@@ -292,7 +293,7 @@ class ChatEngine:
         response = self.client.chat.completions.create(
             model=self.ROUTING_MODEL,
             messages=[
-                {"role": "system", "content":" You are a routing assistant with this list of tools {self.tools}. Determine the correct tool based on the user query."},
+                {"role": "system", "content":f"You are a routing assistant with this list of tools {self.tools}. Determine the correct tool based on the user query."},
                 {"role": "user", "content": routing_prompt}
             ],
             max_tokens=20,
@@ -322,41 +323,43 @@ class ChatEngine:
         tool_calls = first_message.tool_calls
         print("Call for tools: ", tool_calls)
         if tool_calls:
-            tool_messages.append(first_message.content)
-            for tool_call in tool_calls:
-                function_args = json.loads(tool_call.function.arguments)
-                print("Args: ", function_args)
-                # tool_response = self.tools[tool_name](**function_args)
-                match tool_name:
-                    case "web_search":
-                        funcion_response = google_web_search(function_args.get("query"))
-                    case "evaluate":
-                        funcion_response = calculate(function_args.get("expression"))
-                    case "get_joke":
-                        funcion_response =get_joke()
-                print("Function Response", funcion_response)
-                print("Old message", tool_messages)
-                tool_messages.pop()
-                print("Popped message", tool_messages)
-                print("Message len", len(tool_messages))
-                tool_messages.append(
-                    {
-                        "tool_call_id": tool_call.id,
-                        "role": "tool",
-                        "name": tool_name,
-                        "content": funcion_response,
-                    }
+            try:
+                tool_messages.append(first_message.content)
+                for tool_call in tool_calls:
+                    function_args = json.loads(tool_call.function.arguments)
+                    print("Args: ", function_args)
+                    # tool_response = self.tools[tool_name](**function_args)
+                    match tool_name:
+                        case "web_search":
+                            funcion_response = google_web_search(function_args.get("query"))
+                        case "evaluate":
+                            funcion_response = calculate(function_args.get("expression"))
+                        case "get_joke":
+                            funcion_response =get_joke()
+                    print("Function Response", funcion_response)
+                    print("Old message", tool_messages)
+                    tool_messages.pop()
+                    print("Popped message", tool_messages)
+                    print("Message len", len(tool_messages))
+                    tool_messages.append(
+                        {
+                            "tool_call_id": tool_call.id,
+                            "role": "tool",
+                            "name": tool_name,
+                            "content": funcion_response,
+                        }
+                    )
+                    print("Message len", len(tool_messages))
+                    print("New message: ", tool_messages)
+                final_response = self.client.chat.completions.create(
+                    model=self.TOOL_USE_MODEL,
+                    messages=tool_messages
                 )
-                print("Message len", len(tool_messages))
-                print("New message: ", tool_messages)
-            final_response = self.client.chat.completions.create(
-                model=self.TOOL_USE_MODEL,
-                messages=tool_messages
-            )
-            print("The tool is working")
-            return final_response.choices[0].message.content
-        print("No, the tool is not working")
-        return response.choices[0].message.content
+                print("The tool is working")
+                return final_response.choices[0].message.content
+            except:
+                return
+                
 
     def generate_response(self, query, system_prompt):
         """Handle queries not requiring tools using the GENERAL_MODEL"""
@@ -374,18 +377,40 @@ class ChatEngine:
         return response.choices[0].message.content
 
     def process_query(self, query, system_prompt, inputs):
-        """Route the query and execute it with the appropriate tool or model"""
+        """
+        Routes the query and executes it using the appropriate tool or model.
+        
+        Args:
+            query (str): The user's input query.
+            system_prompt (str): The current system prompt state.
+            inputs (dict): Additional inputs required by the tools.
+        
+        Returns:
+            str: The generated response from the tool or model.
+        """
+        # Determine the routing destination for the query
         route = self.route_query(query)
+        
         if route in self.tools:
             print("Tool used:", route)
             tool_response = self.run_with_tool(route, inputs)
-            print("Tool Response: ",tool_response)
-            system_prompt += "You just used tool to do something and here is the result:\n" + tool_response + "\nBy having the result you have the obligation to state and explain what you got!\n"
-            response = self.generate_response(query, system_prompt)
-        else:
-            response = self.generate_response(query, system_prompt)
+            print("Tool Response:", tool_response)
+            
+            # Check if the tool response is valid
+            if tool_response:
+                # Update the system prompt with tool result
+                system_prompt += (
+                    "You just used a tool to do something and here is the result:\n"
+                    f"{tool_response}\n"
+                    "Based on this result, you are required to state and explain what you got.\n"
+                )
+            else:
+                print("Tool did not return a valid response.")
+        
+        # Generate a response based on the updated system prompt
+        response = self.generate_response(query, system_prompt)
         return response
-    
+
     def generate_response_for_utils(self, context, rules):
         message = [
             {"role": "system", "content": rules},
