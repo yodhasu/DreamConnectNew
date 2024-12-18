@@ -9,6 +9,7 @@ from datetime import datetime
 from urlextract import URLExtract
 import base64
 import json
+import g4f
 
 extractor = URLExtract()
 class interactiveChat:
@@ -36,6 +37,7 @@ class interactiveChat:
         self.char_nick = charnickname
         self.feedback = ""
         self.back.send_to_space(["neutral"])
+        self.currmem = ""
         
     # Funtion to setup prompt
     def getPromptFromDir(self):
@@ -96,19 +98,13 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None, imagelike = None):
-        curr_memory = "None"
-        
         # define engine
         self.defineEngine(api_key=api_key)
         # auto update memory logs
         if len(self.logger.get_context_log()) == 15:
-            curr_memory = ""
             self.save_logs()
-        # get memory
-        if curr_memory == "" or curr_memory == "None":
-            curr_memory = "\n"+ self.retrieve_memory(api_key=api_key) or ""+ "\n"
         # identify user's intention
-        intention = self.intentIdentifier(usr_input, self.response, api_key, curr_memory)
+        intention = self.intentIdentifier(usr_input, self.response, api_key, self.currmem)
         # check for images in user input
         img_summarized = ""
         # status, img = self.filterFilepath(usr_input)
@@ -128,20 +124,22 @@ class interactiveChat:
             intention = intention,
             date = str(datetime.now()),
             time = self.get_time_of_day(),
-            memory = curr_memory or "None",
+            memory = self.currmem or "None",
             context = self.logger.get_context_log() or self.context,
             affection = self.affection,
             question = usr_input
         )
         # add image summary to the prompt
         if imagelike:
-            img_summarized = self.imageVision(imagelike)
-            local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
-        
-        
-        
+            try:
+                img_summarized = self.imageVision(imagelike)
+                local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
+            except:
+                pass
         print(f"Context: {local_user_prompt}\n")
         response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt, inputs=usr_input)
+        imagelike = None
+        img_summarized = None
         self.back.send_to_space(response)
         # Debugging print to check the response
         # print(f"Generated response: {response}")
@@ -163,8 +161,6 @@ class interactiveChat:
 
     def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=3):
         memory = ""
-        
-        chatengine = useOllama.ChatEngine()
 
         # Get a list of all log files sorted by name (only JSON files now)
         log_files = sorted(
@@ -174,65 +170,84 @@ class interactiveChat:
         
         # Limit to the most recent `max_logs` files
         recent_logs = log_files[:max_logs]
-        if len(recent_logs) == 0:
+        if not recent_logs:
             return "None"
         
         # Process the most recent logs
         for log_path in recent_logs:
             print("Processing log file at path:", log_path)
             with open(log_path, "r") as logfile:
-                # Read the log entries (now they are in JSON format)
-                logs = json.load(logfile)  # This loads the logs as a list of dictionaries
-                
-                # Iterate through each log entry and format it
-                for log in logs:
-                    # Create a clean format for each log entry
-                    log_text = f"""
-                    Timestamp: {log['Timestamp']}
-                    User message: {log['User message']}
-                    User emotion: {log['User emotion']}
-                    AI Response: {log['AI Response']}
-                    AI emotion: {log['AI emotion']}
-                    Off-topic response: {log['Off topic response']}
-                    Response quality: {log['Overall Response quality']}
-                    Repetitive response: {log['Repetitive response']}
-                    """
-                    memory += log_text + "\n"
-            
+                try:
+                    # Read the log entries (assuming JSON format)
+                    logs = json.load(logfile)
+                    
+                    # Iterate through each log entry and format it
+                    for log in logs:
+                        # Create a clean format for each log entry
+                        log_text = (
+                            f"Timestamp: {log['Timestamp']}\n"
+                            f"User message: {self.preprocess_logs(log['User message'])}\n"
+                            f"User emotion: {log['User emotion']}\n"
+                            f"AI Response: {self.preprocess_logs(log['AI Response'])}\n"
+                            f"AI emotion: {log['AI emotion']}\n"
+                            f"Off-topic response: {log['Off topic response']}\n"
+                            f"Response quality: {log['Overall Response quality']}\n"
+                            f"Repetitive response: {log['Repetitive response']}\n\n"
+                        )
+                        memory += log_text
+                except json.JSONDecodeError:
+                    print(f"Error decoding JSON in file: {log_path}")
+                    continue
+        
         # Construct the summarize prompt
         summarize_prompt = f"""
-        You are {self.charater} also known as {self.char_nick}, an intelligent and advanced AI made by user.
+        You are {self.charater}, also known as {self.char_nick}, an intelligent and advanced AI made by the user.
+
+        I, {self.user}, also known as User, am your friend and creator. We were having a chat previously, and the chat history was saved in a log with the following format:
+
+        - Timestamp
+        - User message
+        - User emotion
+        - AI Response
+        - AI emotion
+        - Off-topic response
+        - Response length
+        - Repetitive response
+        - Overall Response quality
+
+        You must summarize the logs clearly in a narrative style. 
+        - Focus on what happened during the conversation, important details, and your emotions or thoughts.
+        - Identify examples of bad responses from the log and provide them in this format:  
+        Bad Response: [response]
+        - Identify examples of long responses from the log and provide them in this format:  
+        Too Long Response (avoid): [response]
         
-        I, {self.user}, also known as User am your friend and creator, both of us were having a chat previously and the chat history was saved inside a log with format:
-            "Timestamp",
-            "User message",
-            "User emotion",
-            "AI Response",
-            "AI emotion",
-            "Off topic response",
-            "Response length",
-            "Repetitive response",
-            "Overall Response quality"
-        You need to summarize it so you can know:
-        - What happened.
-        - Important details.
-        - How you feel.
-        
-        make summarization on paragraph so you can easily remember it.
-        
-        Give examples of bad response from the logfile using this format:
-        Bad Response: response
-        
-        IMPORTANT! Add this in last part of your summary:
-        Chat ended in [last_timestamp]
-        
-        your max output token are 100 token.
+
+        Conclude your summary with:
+        Chat ended in [last_timestamp].
+
+        ### Important Instructions:
+        - Do NOT include code syntax or interpret the log data as code.
+        - Do NOT use structured or code-like formatting in your output.
+        - Keep your response under 100 tokens for brevity.
+        - Logs with recent timestamps are the most important one.
+        - Always answer in english
+
+        Start your summary below:
         """
         
         # Use the summarizer model to generate the summary of the memory
-        retrieved_memory = chatengine.generate_response(query=memory, system_prompt=summarize_prompt)
+        # retrieved_memory = chatengine.generate_response(query=memory, system_prompt=summarize_prompt)
+        retrieved_memory = g4f.ChatCompletion.create(
+            model=g4f.models.gpt_4o,
+            messages=[
+                {"role": "user", "content":memory},
+                {"role": "system", "content": summarize_prompt}
+            ]
+        )
+        self.currmem = retrieved_memory
         
-        return retrieved_memory if memory != "" else ""
+
 
     
     def intentIdentifier(self, user_input, char_response, memory, api_key):
@@ -254,11 +269,10 @@ class interactiveChat:
         User's input {user_input}
         DO NOT USE ANY TOOLS! YOU ARE NOT ALLOWED TO USE ANY TOOLS!
         """
-        system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 20 - 70 token"
+        system_prompt = "You are a smart AI that is used to identify intention of the user's input in a chat between character and user. Answer in paragraph but limit your answer to 20 - 70 token."
 
         intent = self.chatClient.generate_response_for_utils(context=prompt, rules=system_prompt)
         return intent
-    
     
     def filterFilepath(self, textinput):
         path_pattern = r'["\']?([a-zA-Z]:[\\\/][^<>:"|?*]+(?:[\\\/][^<>:"|?*]+)*)["\']?'
@@ -297,4 +311,17 @@ class interactiveChat:
             return "afternoon"
         else:
             return "night"
+    
+    @staticmethod
+    def preprocess_logs(log_text):
+        """
+        Preprocesses log text by removing code blocks and ensuring plain text.
+        """
+        # Remove code blocks (e.g., ```python ... ``` or any similar block)
+        cleaned_text = re.sub(r"```.*?```", "", log_text, flags=re.DOTALL)
+        
+        # Optionally, remove any residual inline code or syntax-like snippets
+        cleaned_text = re.sub(r"`[^`]+`", "", cleaned_text)
+        
+        return cleaned_text.strip()
                 

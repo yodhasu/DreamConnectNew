@@ -224,6 +224,7 @@ yarl = "==1.18.0"
 torchvision = {version = "*", index = "downloadpytorch"}
 torchaudio = {version = "*", index = "downloadpytorch"}
 torch = {version = "*", index = "downloadpytorch"}
+g4f = "*"
 
 [dev-packages]
 ipykernel = "*"

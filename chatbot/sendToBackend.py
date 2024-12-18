@@ -21,8 +21,13 @@ class backend():
     
     def send_to_space(self, message = None):
         """Send classified emotions to the backend."""
-        emotion = self.classify_emotion(message=message)
-        data = {'response': emotion}
+        try:
+            emotion = self.classify_emotion(message=message)
+            data = {'response': emotion}
+        except:
+            print("Can't do emotion classification due to unusual inputs. Sending 'neutral' as emotion")
+            data = {'response': 'neutral'}
+        
         try:
             response = requests.post(
                 'http://127.0.0.1:9090/send_message',

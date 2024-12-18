@@ -1,3 +1,4 @@
+from email import message
 import json
 from langchain_ollama import ChatOllama
 from langchain.schema import HumanMessage, SystemMessage
@@ -10,8 +11,10 @@ class ChatEngine:
         """
         Initialize the ChatOllama client with the specified model and base URL.
         """
-        self.client = ChatOllama(model=model, temperature=0, repeat_penalty=1, top_p=0.5, top_k=1, num_predict=500)
+        self.model = model
+        self.max_predict = 100
 
+        self.client = ChatOllama(model=model, temperature=0, repeat_penalty=1, top_p=0.5, top_k=1, num_predict=self.max_predict)
         # Available tools
         self.tools = {
             "get_joke": get_joke,
@@ -81,7 +84,6 @@ class ChatEngine:
         else:
             response = self.generate_response(query, system_prompt)
         return response
-   
     # def ollama_vision(self, img_path):
     #     """Process an image using Ollama's vision capabilities (if supported)"""
     #     response = ChatResponse(

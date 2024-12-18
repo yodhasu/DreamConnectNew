@@ -370,7 +370,7 @@ class ChatEngine:
                 {"role": "user", "content": query}
             ],
             temperature=0.95,
-            max_tokens=300,
+            max_tokens=2042,
             frequency_penalty=1.9,
             presence_penalty=0.7
         )

@@ -44,6 +44,7 @@
 # chat.save_logs()
 # from voicelines import rvcsupport
 # from voicelines.rvcsupport import VoiceClone
+from flask import session
 import streamlit as st
 import base64
 from chatbot.interactive import interactiveChat
@@ -105,6 +106,15 @@ if "model_index" not in st.session_state:
 
 if "voice_opt" not in st.session_state:
     st.session_state.voice_opt = False
+    
+if "image_file" not in st.session_state:
+    st.session_state.image_file = None
+
+if "get_mem" not in st.session_state:
+    st.session_state.get_mem = None
+
+if "is_memory_retrieved" not in st.session_state:
+    st.session_state.is_memory_retrieved = False
 # Model location input for voiceline
 with st.sidebar:
     model_path = st.text_input(label="model.pth location")
@@ -116,6 +126,16 @@ with st.sidebar:
 
 # print(st.session_state.model_pth)
 # print(st.session_state.model_index)
+
+# Retrieve memory
+if not st.session_state.is_memory_retrieved:
+    # Run memory retrieval for the first time
+    st.session_state.get_mem = st.session_state.chat.retrieve_memory()
+    st.success("Initial memory retrieved successfully!")
+    st.session_state.is_memory_retrieved = True
+elif len(st.session_state.chatlogs.get_context_log()) == 15:
+    st.session_state.get_mem = st.session_state.chat.retrieve_memory()
+    st.success("Memory retrieved successfully!")
 
 # Display chat messages from history on app rerun
 for message in st.session_state.messages:
@@ -131,7 +151,7 @@ if prompt or st.session_state.is_clicked:
         st.session_state.last_prompt = prompt
         st.session_state.is_clicked = False
     else:
-        prompt = st.session_state.last_prompt
+        prompt = "##THIS IS A REGENERATED ATTEMPT##\n"+"User Question:"+st.session_state.last_prompt+f"\n###YOU ARE ASKED TO GENERATE ANOTHER RESPONSE BECAUSE YOUR PREVIOUS RESPONSE:{st.session_state.ai_msg} IS CONSIDERED BAD RESPONSE, TRY TO MAKE SHORTER RESPONSE AND MORE RELATED TO THE TOPIC.###"
     
     
     if prompt.lower() == "/exit":
@@ -141,22 +161,28 @@ if prompt or st.session_state.is_clicked:
     # declare user message
     if not st.session_state.is_clicked:    
         with st.chat_message("user"):
-            st.markdown(prompt)
+            st.write(prompt)
         # add user message to session state
         st.session_state.messages.append({"role": "user", "content": prompt})
     
     # chatbot message
     with st.chat_message("assistant", avatar="assets/character_logo/march7th.png"):
-        response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=local_image)
+        
+        response = st.session_state.chat.makeChat(usr_input=prompt, api_key=api_key, imagelike=st.session_state.image_file)
         st.session_state.ai_msg = response
         st.write(response)
         st.session_state.is_clicked = False
+        
+        
         # if st.session_state.voice_opt:
         #     voice.make_voice_lines_rvg(response, st.session_state.model_pth, st.session_state.model_index)
             
     st.session_state.messages.append({"role": "assistant", "content": st.session_state.ai_msg})
     try:
         filelike.close()
+        os.remove(st.session_state.image_file)
+        st.session_state.image_file = None
+        filelike = None
     except:
         pass
     if st.session_state.messages:
@@ -164,7 +190,7 @@ if prompt or st.session_state.is_clicked:
         if chat_quality == None:
             chat_quality = 1
         st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
-        st.session_state.chatlogs.log_context(user_message=st.session_state.usr_msg, character_response=st.session_state.ai_msg, response_quality= "good" if chat_quality == 1 else "bad")
+        st.session_state.chatlogs.log_context(user_message=prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")
 
 # Regenerate response button
 if st.session_state.last_prompt and st.button("Regenerate Response"):
@@ -181,4 +207,4 @@ print(st.session_state.ai_msg)
 # file handling
 filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'])
 if filelike:
-    local_image = f"data:image/jpeg;base64,{encode_image(filelike)}" 
+    st.session_state.image_file = f"data:image/jpeg;base64,{encode_image(filelike)}" 
