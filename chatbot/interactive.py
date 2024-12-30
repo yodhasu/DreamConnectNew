@@ -24,6 +24,7 @@ class interactiveChat:
         self.charater = char
         self.affection = affection
         self.user = user
+        self.usrintent = ""
         self.bio = bio
         self.context = context or ""
         self.system_prompt = system_prompt
@@ -98,13 +99,16 @@ class interactiveChat:
     
     # chat function
     def makeChat(self, usr_input = None, api_key = None, imagelike = None):
+        intention = None
         # define engine
         self.defineEngine(api_key=api_key)
         # auto update memory logs
         if len(self.logger.get_context_log()) == 15:
             self.save_logs()
         # identify user's intention
-        intention = self.intentIdentifier(usr_input, self.response, api_key, self.currmem)
+        if "REGENERATED ATTEMPT" not in usr_input:
+            intention = self.intentIdentifier(usr_input, self.response, api_key, self.currmem)
+            self.usrintent = intention
         # check for images in user input
         img_summarized = ""
         # status, img = self.filterFilepath(usr_input)
@@ -121,7 +125,7 @@ class interactiveChat:
         )
         
         local_user_prompt=local_user_prompt.format(
-            intention = intention,
+            intention = intention or self.usrintent,
             date = str(datetime.now()),
             time = self.get_time_of_day(),
             memory = self.currmem or "None",
@@ -159,7 +163,7 @@ class interactiveChat:
         filename = filename.replace(".", "-")
         self.logger.save_context_log(filename=f"{filename}.json")
 
-    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=3):
+    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=2):
         memory = ""
 
         # Get a list of all log files sorted by name (only JSON files now)

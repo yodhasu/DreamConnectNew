@@ -225,6 +225,7 @@ torchvision = {version = "*", index = "downloadpytorch"}
 torchaudio = {version = "*", index = "downloadpytorch"}
 torch = {version = "*", index = "downloadpytorch"}
 g4f = "*"
+speechbrain = "*"
 
 [dev-packages]
 ipykernel = "*"

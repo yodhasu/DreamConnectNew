@@ -189,6 +189,9 @@ import json
 from chatbot.tools.makeJokes import get_joke
 from chatbot.tools.makeCalculations import calculate
 from chatbot.tools.makeSearch import google_web_search
+# from chatbot.tools.taskReminderShort import TaskReminder
+
+# reminder = TaskReminder()
 
 class ChatEngine:
     def __init__(self, api_key=None, model = None):
@@ -275,6 +278,24 @@ class ChatEngine:
                     },
                 },
             },
+            # {
+            #     "type": "function",
+            #     "function": {
+            #         "name": "add_task",
+            #         "description": "Search something on internet or Google, use Google search API.",
+            #         "parameters": {
+            #             "type": "object",
+            #             "properties": {
+            #                 # all parameters needed
+            #                 "query": {
+            #                     "type": "string",
+            #                     "description": "Things that needed to be search on Google or internet.",
+            #                 },
+            #             },
+            #             "required": ["query"],
+            #         },
+            #     },
+            # },
         ]
 
     def route_query(self, query):
@@ -421,7 +442,7 @@ class ChatEngine:
                 messages=message,
                 model=self.UTILITY_TOOLS,
                 temperature=0,
-                max_tokens=200,
+                max_tokens=100,
                 top_p = 0.9,
                 frequency_penalty=1.7,
                 presence_penalty=0.7,
@@ -430,8 +451,8 @@ class ChatEngine:
             model_response = response.choices[0].message
             
             return model_response.content
-        except Exception as e:
-            raise (f"Error generating response: {e}")
+        except:
+            raise Exception
 
     def groqVision(self, img_path):
             completion = self.client.chat.completions.create(
