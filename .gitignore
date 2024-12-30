@@ -166,6 +166,9 @@ cython_debug/
 *.ipynb
 nlp_uap_review/
 voicelines/
+
+# model for speech recognition
+tmp_model
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore

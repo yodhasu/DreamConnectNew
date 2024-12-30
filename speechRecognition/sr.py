@@ -1,5 +1,6 @@
 import torchaudio
-from speechbrain.pretrained import SpeakerRecognition
+import speechbrain
+from speechbrain.inference.speaker import SpeakerRecognition
 
 class SpeakerVerification:
     def __init__(self, model_source="speechbrain/spkrec-ecapa-voxceleb", reference_audio_path=None):
@@ -8,7 +9,8 @@ class SpeakerVerification:
         
         # Preload reference audio
         if reference_audio_path:
-            self.reference_signal, _ = torchaudio.load(reference_audio_path)
+            # self.reference_signal, _ = torchaudio.load(reference_audio_path)
+            self.reference_signal = reference_audio_path
         else:
             self.reference_signal = None
 
@@ -17,18 +19,18 @@ class SpeakerVerification:
             raise ValueError("Reference audio not loaded. Provide a valid reference audio during initialization.")
         
         # Load input audio for verification
-        input_signal, _ = torchaudio.load(input_audio_path)
+        input_signal = input_audio_path
         
         # Perform speaker verification
-        score = self.model.verify_batch(input_signal, self.reference_signal)
-        return "You" if score > 0.5 else "Not You"
+        score, prediction = self.model.verify_files(input_signal, self.reference_signal)
+        return f"You with score {score}" if prediction == 1 else f"Not You with score {score}"
 
 
 # Initialize the SpeakerVerification class with a reference audio file
-reference_audio_path = "reference_audio.wav"  # Replace with the actual path to your reference audio
+reference_audio_path = r"C:\Users\Axioo Pongo\OneDrive\Documents\Sound Recordings\reference_speaker.wav"  # Replace with the actual path to your reference audio
 verifier = SpeakerVerification(reference_audio_path=reference_audio_path)
 
 # Simulate multiple verification requests
-input_audio_path = "user_input.wav"  # Replace with the actual path to your input audio
+input_audio_path = r"C:\Users\Axioo Pongo\OneDrive\Documents\Sound Recordings\tes_speaker.wav"  # Replace with the actual path to your input audio
 result = verifier.verify(input_audio_path)
 print(f"Verification Result: {result}")
