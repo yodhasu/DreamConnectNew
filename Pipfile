@@ -226,6 +226,8 @@ torchaudio = {version = "*", index = "downloadpytorch"}
 torch = {version = "*", index = "downloadpytorch"}
 g4f = "*"
 speechbrain = "*"
+assemblyai = "*"
+pyaudio = "*"
 
 [dev-packages]
 ipykernel = "*"

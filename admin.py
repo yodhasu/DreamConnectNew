@@ -44,13 +44,17 @@
 # chat.save_logs()
 # from voicelines import rvcsupport
 # from voicelines.rvcsupport import VoiceClone
-from flask import session
+from pydoc import text
 import streamlit as st
 import base64
 from chatbot.interactive import interactiveChat
 from chatbot.context_logger import ContextLogger
 from dotenv import load_dotenv
 import os
+import assemblyai as aai
+import speech_recognition as spr
+from speechRecognition.sr import SpeakerVerification
+from scipy.io.wavfile import write
 
 # voice = VoiceClone(timbre_blend=0.7, pitch_shift=3)
 
@@ -115,6 +119,15 @@ if "get_mem" not in st.session_state:
 
 if "is_memory_retrieved" not in st.session_state:
     st.session_state.is_memory_retrieved = False
+
+if "file_uploader_key" not in st.session_state:
+    st.session_state["file_uploader_key"] = 69
+    
+if "audio_uploader_key" not in st.session_state:
+    st.session_state["audio_uploader_key"] = 42
+
+if "sr" not in st.session_state:
+    st.session_state.sr = SpeakerVerification(reference_audio_path=r"C:\Users\Axioo Pongo\OneDrive\Documents\Sound Recordings\reference_speaker.wav")
 # Model location input for voiceline
 with st.sidebar:
     model_path = st.text_input(label="model.pth location")
@@ -143,8 +156,44 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # user message
-prompt = st.chat_input("Type a message")
 
+# Regenerate response button
+if st.session_state.last_prompt and st.button("Regenerate Response"):
+    # Generate new response for the last prompt
+    st.session_state.is_clicked = True
+    st.session_state.messages.pop()
+    st.rerun()
+# Audio input for recording prompt
+audio_placeholder = st.empty()  # Use a placeholder to manage audio widget visibility
+audio_prompt = None
+# user message
+prompt = st.chat_input("Type a message")
+if prompt:
+    prompt = "User type:\n" + prompt
+
+audio_prompt = st.audio_input("Record as prompt", label_visibility="collapsed", key=st.session_state["audio_uploader_key"])
+
+
+if audio_prompt:
+    input_audio_path = "speechRecognition/input_audio.wav"
+    with open(input_audio_path, "wb") as f:
+            f.write(audio_prompt.getbuffer())
+
+    sr_pred = st.session_state.sr.verify(input_audio_path=input_audio_path)
+    st.write(f"Voice Prediction {sr_pred}")
+    
+    if sr_pred:
+        transcript = st.session_state.sr.stt(input_audio_path)
+        st.session_state["file_uploader_key"] += 1
+        text = transcript
+        st.write(text)
+        prompt = f"You hear {user} speaks:\n"+text
+        os.remove(input_audio_path)
+        # audio_prompt.detach()
+        audio_prompt.flush()
+        audio_prompt.close()
+        
+    
 if prompt or st.session_state.is_clicked:
     if prompt:
         st.session_state.usr_msg = prompt
@@ -154,16 +203,16 @@ if prompt or st.session_state.is_clicked:
         prompt = "##THIS IS A REGENERATED ATTEMPT##\n"+"User Question:"+st.session_state.last_prompt+f"\n###YOU ARE ASKED TO GENERATE ANOTHER RESPONSE BECAUSE YOUR PREVIOUS RESPONSE:{st.session_state.ai_msg} IS CONSIDERED BAD RESPONSE, TRY TO MAKE SHORTER RESPONSE AND MORE RELATED TO THE TOPIC.###"
     
     
-    if prompt.lower() == "/exit":
+    if "/exit" in prompt.lower():
         st.session_state.chat.save_logs()
         st.warning("Chatlog saved succesfully! You may close the app by stopping or pressing ctrl + c on your cmd")
         st.stop()
     # declare user message
     if not st.session_state.is_clicked:    
         with st.chat_message("user"):
-            st.write(prompt)
+            st.write(prompt.replace(f"You hear {user} speaks:\n", ""))
         # add user message to session state
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.messages.append({"role": "user", "content": prompt.replace(f"You hear {user} speaks:\n", "")})
     
     # chatbot message
     with st.chat_message("assistant", avatar="assets/character_logo/march7th.png"):
@@ -176,7 +225,6 @@ if prompt or st.session_state.is_clicked:
         
         # if st.session_state.voice_opt:
         #     voice.make_voice_lines_rvg(response, st.session_state.model_pth, st.session_state.model_index)
-            
     st.session_state.messages.append({"role": "assistant", "content": st.session_state.ai_msg})
     try:
         filelike.close()
@@ -191,20 +239,15 @@ if prompt or st.session_state.is_clicked:
             chat_quality = 1
         st.session_state.chat.classifyFeedback("yes" if chat_quality == 1 else "bad")
         st.session_state.chatlogs.log_context(user_message=prompt, character_response=response, response_quality= "good" if chat_quality == 1 else "bad")
-
-# Regenerate response button
-if st.session_state.last_prompt and st.button("Regenerate Response"):
-    # Generate new response for the last prompt
-    st.session_state.is_clicked = True
-    st.session_state.messages.pop()
-    st.rerun()
-
+        st.session_state["file_uploader_key"] += 1
+        st.session_state["audio_uploader_key"] += 2
+        st.rerun()
 
 print(st.session_state.usr_msg)
 print(st.session_state.ai_msg)
 
 
 # file handling
-filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'])
+filelike = st.file_uploader(label="Input image here", type=['png', 'jpg', 'jpeg', 'bmp'], key=st.session_state["file_uploader_key"])
 if filelike:
     st.session_state.image_file = f"data:image/jpeg;base64,{encode_image(filelike)}" 
