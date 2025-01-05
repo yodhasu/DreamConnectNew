@@ -7,7 +7,7 @@ class SpeakerVerification:
     def __init__(self, model_source="speechbrain/spkrec-ecapa-voxceleb", reference_audio_path=None):
         # Load pretrained model only once
         self.model = SpeakerRecognition.from_hparams(source=model_source, savedir="tmp_model")
-        self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-small")
+        self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-small", device='cuda')
         
         # Preload reference audio
         if reference_audio_path:
@@ -24,9 +24,13 @@ class SpeakerVerification:
         input_signal = input_audio_path
         
         # Perform speaker verification
-        score, prediction = self.model.verify_files(input_signal, self.reference_signal)
-        # return f"You with score {score}" if prediction == 1 else f"Not You with score {score}"
-        return prediction
+        try:
+            score, prediction = self.model.verify_files(input_signal, self.reference_signal)
+            # return f"You with score {score}" if prediction == 1 else f"Not You with score {score}"
+            return prediction
+        except Exception as e:
+            print(f"Error warning: {e}")
+            pass
 
     def stt(self, input_audio_path):
         resultstt = self.sttmodel(input_audio_path, return_timestamps=True)
