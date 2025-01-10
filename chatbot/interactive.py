@@ -242,14 +242,17 @@ class interactiveChat:
         
         # Use the summarizer model to generate the summary of the memory
         # retrieved_memory = chatengine.generate_response(query=memory, system_prompt=summarize_prompt)
-        retrieved_memory = g4f.ChatCompletion.create(
-            model=g4f.models.gpt_4o,
-            messages=[
-                {"role": "user", "content":memory},
-                {"role": "system", "content": summarize_prompt}
-            ]
-        )
-        self.currmem = retrieved_memory
+        while True:
+            retrieved_memory = g4f.ChatCompletion.create(
+                model=g4f.models.gpt_4o,
+                messages=[
+                    {"role": "user", "content":memory},
+                    {"role": "system", "content": summarize_prompt}
+                ]
+            )
+            if retrieved_memory is not None:
+                self.currmem = retrieved_memory
+                break
         
 
 

@@ -189,6 +189,7 @@ import json
 from chatbot.tools.makeJokes import get_joke
 from chatbot.tools.makeCalculations import calculate
 from chatbot.tools.makeSearch import google_web_search
+from chatbot.tools.seeImg import see_screenshot
 # from chatbot.tools.taskReminderShort import TaskReminder
 
 # reminder = TaskReminder()
@@ -209,6 +210,7 @@ class ChatEngine:
         self.tools = {
             "get_joke": get_joke,
             "calculate": calculate,
+            "see_screenshot": lambda prompt: see_screenshot(prompt),
             "web_search": lambda query: google_web_search(query),
         }
         self.tools_details = [
@@ -278,24 +280,24 @@ class ChatEngine:
                     },
                 },
             },
-            # {
-            #     "type": "function",
-            #     "function": {
-            #         "name": "add_task",
-            #         "description": "Search something on internet or Google, use Google search API.",
-            #         "parameters": {
-            #             "type": "object",
-            #             "properties": {
-            #                 # all parameters needed
-            #                 "query": {
-            #                     "type": "string",
-            #                     "description": "Things that needed to be search on Google or internet.",
-            #                 },
-            #             },
-            #             "required": ["query"],
-            #         },
-            #     },
-            # },
+            {
+                "type": "function",
+                "function": {
+                    "name": "see_screenshot",
+                    "description": "See or view the user screen. Get enough information on what in the user's screen.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            # all parameters needed
+                            "prompt": {
+                                "type": "string",
+                                "description": "Things that needed to be see or processed. Could be a specific task that the user wants or needs from the image.",
+                            },
+                        },
+                        "required": ["prompt"],
+                    },
+                },
+            },
         ]
 
     def route_query(self, query):
@@ -330,7 +332,7 @@ class ChatEngine:
     def run_with_tool(self, tool_name, query):
         """Handle queries requiring tools using TOOL_USE_MODEL"""
         tool_messages = [
-            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got. Only use tools if the purpose is related with the tool functionalities, other than that skip the tools."},
+            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
             {"role": "user", "content": query}
         ]
         response = self.client.chat.completions.create(
@@ -357,6 +359,9 @@ class ChatEngine:
                             funcion_response = calculate(function_args.get("expression"))
                         case "get_joke":
                             funcion_response =get_joke()
+                        case "see_screenshot":
+                            print("seeing image...")
+                            funcion_response =see_screenshot(function_args.get("prompt"))
                     print("Function Response", funcion_response)
                     print("Old message", tool_messages)
                     tool_messages.pop()
@@ -390,7 +395,7 @@ class ChatEngine:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query}
             ],
-            temperature=0.95,
+            temperature=0.85,
             max_tokens=2042,
             frequency_penalty=1.9,
             presence_penalty=0.7
@@ -463,7 +468,7 @@ class ChatEngine:
                         "content": [
                             {
                                 "type": "text",
-                                "text": "Describe what's in the image in short. Your token is limited to 100"
+                                "text": "Describe the image. Your token is limited to 1000"
                             },
                             {
                                 "type": "image_url",
@@ -475,7 +480,7 @@ class ChatEngine:
                     }
                 ],
                 temperature=0,
-                max_tokens=500,
+                max_tokens=2042,
                 top_p=1,
                 stream=False,
                 stop=None,
