@@ -201,7 +201,7 @@ class ChatEngine:
         self.client = Groq(api_key=api_key)
 
         # Define models
-        self.ROUTING_MODEL = "llama3-70b-8192"
+        self.ROUTING_MODEL = "llama-3.1-8b-instant"
         self.TOOL_USE_MODEL = "llama-3.1-8b-instant"
         self.GENERAL_MODEL = "llama3-70b-8192"
         self.UTILITY_TOOLS = "llama3-70b-8192"
@@ -331,64 +331,71 @@ class ChatEngine:
 
     def run_with_tool(self, tool_name, query):
         """Handle queries requiring tools using TOOL_USE_MODEL"""
-        tool_messages = [
-            {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
-            {"role": "user", "content": query}
-        ]
-        response = self.client.chat.completions.create(
-            model=self.TOOL_USE_MODEL,
-            messages=tool_messages,
-            max_tokens=4096,
-            tools= self.tools_details,
-            tool_choice="required"
-        )
-        first_message = response.choices[0].message
-        tool_calls = first_message.tool_calls
-        print("Call for tools: ", tool_calls)
-        if tool_calls:
-            try:
-                tool_messages.append(first_message.content)
-                for tool_call in tool_calls:
-                    function_args = json.loads(tool_call.function.arguments)
-                    print("Args: ", function_args)
-                    # tool_response = self.tools[tool_name](**function_args)
-                    match tool_name:
-                        case "web_search":
-                            funcion_response = google_web_search(function_args.get("query"))
-                        case "evaluate":
-                            funcion_response = calculate(function_args.get("expression"))
-                        case "get_joke":
-                            funcion_response =get_joke()
-                        case "see_screenshot":
-                            print("seeing image...")
-                            funcion_response =see_screenshot(function_args.get("prompt"))
-                    print("Function Response", funcion_response)
-                    print("Old message", tool_messages)
-                    tool_messages.pop()
-                    print("Popped message", tool_messages)
-                    print("Message len", len(tool_messages))
-                    tool_messages.append(
-                        {
-                            "tool_call_id": tool_call.id,
-                            "role": "tool",
-                            "name": tool_name,
-                            "content": funcion_response,
-                        }
+        try:
+            tool_messages = [
+                {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
+                {"role": "user", "content": query}
+            ]
+            response = self.client.chat.completions.create(
+                model=self.TOOL_USE_MODEL,
+                messages=tool_messages,
+                max_tokens=4096,
+                tools= self.tools_details,
+                tool_choice="required"
+            )
+            first_message = response.choices[0].message
+            tool_calls = first_message.tool_calls
+            print("Call for tools: ", tool_calls)
+            if tool_calls:
+                try:
+                    tool_messages.append(first_message)
+                    for tool_call in tool_calls:
+                        function_args = json.loads(tool_call.function.arguments)
+                        print("Args: ", function_args)
+                        # tool_response = self.tools[tool_name](**function_args)
+                        match tool_name:
+                            case "web_search":
+                                funcion_response = google_web_search(function_args.get("query"))
+                            case "evaluate":
+                                funcion_response = calculate(function_args.get("expression"))
+                            case "get_joke":
+                                funcion_response =get_joke()
+                            case "see_screenshot":
+                                print("seeing image...")
+                                funcion_response =see_screenshot(function_args.get("prompt"))
+                        try:
+                            if tool_messages['name'] is tool_name:
+                                break
+                        except:
+                            pass
+                        tool_messages.append(
+                            {
+                                "tool_call_id": tool_call.id,
+                                "role": "tool",
+                                "name": tool_name,
+                                "content": funcion_response,
+                            }
+                        )
+                        print("Function Response", funcion_response)
+                        print("Message len", len(tool_messages))
+                        print(f"All messages: {tool_messages}")
+                    final_response = self.client.chat.completions.create(
+                        model=self.TOOL_USE_MODEL,
+                        messages=tool_messages
                     )
-                    print("Message len", len(tool_messages))
-                    print("New message: ", tool_messages)
-                final_response = self.client.chat.completions.create(
-                    model=self.TOOL_USE_MODEL,
-                    messages=tool_messages
-                )
-                print("The tool is working")
-                return final_response.choices[0].message.content
-            except:
-                return
+                    print("The tool is working")
+                    return final_response.choices[0].message.content
+                except Exception as e:
+                    print(f"Error occured: {e}")
+                    return f"Can not use tool {tool_name} because of an error with message {e}"
+        except Exception as e:
+            print(f"Error occured: {e}")
+            return f"Can not use tool {tool_name} because of an error with message {e}"
                 
 
     def generate_response(self, query, system_prompt):
         """Handle queries not requiring tools using the GENERAL_MODEL"""
+        print(f"\n\nQuery:\n\n{query}")
         response = self.client.chat.completions.create(
             model=self.GENERAL_MODEL,
             messages=[
@@ -432,6 +439,9 @@ class ChatEngine:
                 )
             else:
                 print("Tool did not return a valid response.")
+                system_prompt += (
+                    "No tool is used\n"
+                )
         
         # Generate a response based on the updated system prompt
         response = self.generate_response(query, system_prompt)

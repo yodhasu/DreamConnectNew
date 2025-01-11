@@ -23,7 +23,7 @@ def see_screenshot(prompt):
                 "content": [
                     {
                         "type": "text",
-                        "text": f"Describe the image. {prompt} Your token is limited to 1000"
+                        "text": f"The image is the screenshot of user screen. Try to describe what's on the screen, what application or window that currently opened (Discord, Notepad, Web Browser, Youtube, etc.), and any other important information. Additional prompt: {prompt} Your token is limited to 1000"
                     },
                     {
                         "type": "image_url",

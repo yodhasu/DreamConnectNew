@@ -1,13 +1,13 @@
-import torchaudio
-import speechbrain
 from speechbrain.inference.speaker import SpeakerRecognition
 from transformers import pipeline
+import whisper
 
 class SpeakerVerification:
     def __init__(self, model_source="speechbrain/spkrec-ecapa-voxceleb", reference_audio_path=None):
         # Load pretrained model only once
         self.model = SpeakerRecognition.from_hparams(source=model_source, savedir="tmp_model")
         self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device='cuda')
+        self.whispermodel = whisper.load_model(name="small", device="cuda", download_root="speechRecognition/model", in_memory=True)
         
         # Preload reference audio
         if reference_audio_path:
@@ -33,8 +33,15 @@ class SpeakerVerification:
             pass
 
     def stt(self, input_audio_path):
-        resultstt = self.sttmodel(input_audio_path, return_timestamps=True)
-        return resultstt['text']
+        # resultstt = self.sttmodel(input_audio_path, return_timestamps=True)
+        # return resultstt['text']
+        
+        resultstt = self.whispermodel.transcribe(
+            audio=input_audio_path,
+            temperature=0,
+            word_timestamps=True
+        )
+        return resultstt["text"]
 
 
 # # Initialize the SpeakerVerification class with a reference audio file

@@ -140,7 +140,6 @@ class interactiveChat:
                 local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
             except:
                 pass
-        print(f"Context: {local_user_prompt}\n")
         response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt, inputs=usr_input)
         imagelike = None
         img_summarized = None
@@ -163,7 +162,7 @@ class interactiveChat:
         filename = filename.replace(".", "-")
         self.logger.save_context_log(filename=f"{filename}.json")
 
-    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=2):
+    def retrieve_memory(self, api_key=None, log_dir="chatbot/logs/", max_logs=5):
         memory = ""
 
         # Get a list of all log files sorted by name (only JSON files now)

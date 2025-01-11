@@ -1,10 +1,8 @@
-from concurrent.futures import thread
 from chatbot.interactive import interactiveChat
 from dotenv import load_dotenv
 import os
 import speech_recognition as spr
-from scipy.io.wavfile import write
-from speechRecognition.listen import BackgroundAudioRecorder
+from speechRecognition.listen import ListenToPrompt
 import threading
 from streamScreen.capsc import streamsc
 
@@ -22,7 +20,7 @@ input_audio_path = "speechRecognition/recorded.wav"
 # Initialize chatbot
 chat = interactiveChat(user=user, bio=userbio, char=char, charnickname=nickname)
 recog = spr.Recognizer()
-listener = BackgroundAudioRecorder(silence_timeout=5)
+listener = ListenToPrompt(silence_timeout=5)
 
 
 capture_proc = threading.Thread(target=streamsc)

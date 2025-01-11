@@ -228,8 +228,9 @@ g4f = "*"
 speechbrain = "*"
 assemblyai = "*"
 pyaudio = "*"
-whisper = "*"
 pyautogui = "*"
+whisper = "*"
+openai-whisper = "*"
 
 [dev-packages]
 ipykernel = "*"
