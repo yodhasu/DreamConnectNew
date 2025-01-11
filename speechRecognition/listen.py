@@ -35,18 +35,23 @@ class ListenToPrompt:
                     chat_module.retrieve_memory()
                 self.recorder.record_audio()
                 verify = self.speakverif.verify(self.save_audio)
-                if verify['score'] > 0.3 and verify['pred']:
-                    prompt = self.speakverif.stt(self.save_audio)
-                    response = chat_module.makeChat(usr_input=prompt, api_key=api, imagelike=filelike)
-                    asyncio.run(self.tts.createTTS(self.remove_asterisk_phrases(response)))
+                try:
+                    if verify['score'] > 0.3 and verify['pred']:
+                        prompt = self.speakverif.stt(self.save_audio)
+                        response = chat_module.makeChat(usr_input=prompt, api_key=api, imagelike=filelike)
+                        asyncio.run(self.tts.createTTS(self.remove_asterisk_phrases(response)))
+                        
+                        os.remove("myTTS/voiceline_pcm.wav")
+                                    
+                        if "bye" in response.lower() or "end session" in response.lower() or "session terminate" in response.lower():
+                            chat_module.save_logs()
+                            return
+                    else:
+                        print(f"Score: {verify['score']}, Prediction: {verify['pred']}")
+                except Exception as e:
+                    print(f"Error occured: {e}")
+                    pass
                     
-                    os.remove("myTTS/voiceline_pcm.wav")
-                                
-                    if "bye" in response.lower() or "end session" in response.lower() or "session terminate" in response.lower():
-                        chat_module.save_logs()
-                        return
-                else:
-                    print(f"Score: {verify['score']}, Prediction: {verify['pred']}")
         except KeyboardInterrupt:
             print("Stopping...")
             chat_module.save_logs()

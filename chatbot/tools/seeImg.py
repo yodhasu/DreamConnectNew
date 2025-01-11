@@ -46,4 +46,4 @@ def see_screenshot(prompt):
     print("Results JSON: ", result_json)
     return result_json
 
-see_screenshot("focus on the text and describe what is it")
+# see_screenshot("focus on the text and describe what is it")

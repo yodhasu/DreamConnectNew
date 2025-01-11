@@ -140,7 +140,7 @@ class interactiveChat:
                 local_user_prompt += f"\n\nSummary of given image by user: {img_summarized}\n\nBy having summary of the image given by user that means you can SEE the image and please tell what you see."
             except:
                 pass
-        response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt, inputs=usr_input)
+        response = self.chatClient.process_query(query=local_user_prompt, system_prompt=local_system_prompt)
         imagelike = None
         img_summarized = None
         self.back.send_to_space(response)

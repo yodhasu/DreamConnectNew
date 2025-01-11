@@ -18,12 +18,16 @@ nickname = "Rin"
 input_audio_path = "speechRecognition/recorded.wav"
 
 # Initialize chatbot
+print("Initialize chat")
 chat = interactiveChat(user=user, bio=userbio, char=char, charnickname=nickname)
+print("Initialize reog")
 recog = spr.Recognizer()
+print("Initialize listen")
 listener = ListenToPrompt(silence_timeout=5)
 
-
+print("starting screen stream")
 capture_proc = threading.Thread(target=streamsc)
+print("starting audio")
 listen_proc = threading.Thread(target=listener.start_listening, args=(chat, api_key, None))
 
 capture_proc.start()

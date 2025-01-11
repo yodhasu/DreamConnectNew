@@ -39,7 +39,7 @@ class SpeakerVerification:
         resultstt = self.whispermodel.transcribe(
             audio=input_audio_path,
             temperature=0,
-            word_timestamps=True
+            word_timestamps=True,
         )
         return resultstt["text"]
 
