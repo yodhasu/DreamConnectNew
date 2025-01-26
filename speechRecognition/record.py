@@ -11,7 +11,7 @@ class BackgroundAudioRecorder:
         # self.tts = SimpleTTS()
         # self.context = ContextLogger()
         
-    def is_silence(self, audio_chunk, silence_thresh, energy_thresh=500):
+    def is_silence(self, audio_chunk, silence_thresh, energy_thresh=750):
         # Convert the audio chunk to a NumPy array of 16-bit integers
         audio_chunk = np.frombuffer(audio_chunk, dtype=np.int16)
         print(f"Audio Chunk: {audio_chunk}")
@@ -23,7 +23,7 @@ class BackgroundAudioRecorder:
         # Check if both energy and maximum absolute value are below thresholds
         return energy < energy_thresh and np.max(audio_chunk) < silence_thresh
 
-    def record_audio(self, max_silence_duration=10000, sample_rate=16000, chunk_size=1024, silence_thresh=4000):
+    def record_audio(self, max_silence_duration=10000, sample_rate=16000, chunk_size=1024, silence_thresh=750):
         started = 0
         # Initialize PyAudio
         p = pyaudio.PyAudio()

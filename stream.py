@@ -12,9 +12,9 @@ api_key = os.getenv("GROQ_API_KEY")
 local_image = ""
 filelike = None
 user = "Yodha"
-userbio = "Your creator. Male, 5th semester college student,5 have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
-char = "RIN-207 (Responsive Intelligence Nexus)"
-nickname = "Rin"
+userbio = "Your creator. Male, 5th semester college student, have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
+char = "Z.E.N.I.T.H (Zestful Executive Navigator and Intuitive Task Hostess)"
+nickname = "Zen"
 input_audio_path = "speechRecognition/recorded.wav"
 
 # Initialize chatbot

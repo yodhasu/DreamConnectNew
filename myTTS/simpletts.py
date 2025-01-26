@@ -14,7 +14,7 @@ class SimpleTTS:
     def checkLang(self, text):
         detected = detect(text=text)
         lang_to_voice = {
-            "en": "en-US-AriaNeural",    # English (US)
+            "en": "en-US-MichelleNeural",    # English (US)
             "es": "es-ES-ElviraNeural", # Spanish (Spain)
             "fr": "fr-FR-DeniseNeural", # French (France)
             "de": "de-DE-KatjaNeural",  # German (Germany)
@@ -22,11 +22,11 @@ class SimpleTTS:
             "zh": "zh-CN-XiaoxiaoNeural" # Chinese (Simplified)
         }
         # Default to English if language not supported
-        return lang_to_voice.get(detected, "en-US-AriaNeural")
+        return lang_to_voice.get(detected, "en-US-MichelleNeural")
     
     async def createTTS(self, text):
         lang = self.checkLang(text=text)
-        tts = edge_tts.Communicate(text=text, voice=lang, rate="+13%", pitch="+10Hz")
+        tts = edge_tts.Communicate(text=text, voice=lang, rate="+13%", pitch="+15Hz")
         await tts.save(self.audiofile)
         
         # Convert to PCM format for pygame compatibility

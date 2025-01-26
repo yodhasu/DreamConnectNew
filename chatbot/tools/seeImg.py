@@ -44,6 +44,6 @@ def see_screenshot(prompt):
     result_json = json.dumps({"result": img_results})
     print("Results: ", img_results)
     print("Results JSON: ", result_json)
-    return result_json
+    return img_results
 
 # see_screenshot("focus on the text and describe what is it")

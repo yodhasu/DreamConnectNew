@@ -6,8 +6,12 @@ class SpeakerVerification:
     def __init__(self, model_source="speechbrain/spkrec-ecapa-voxceleb", reference_audio_path=None):
         # Load pretrained model only once
         self.model = SpeakerRecognition.from_hparams(source=model_source, savedir="tmp_model")
-        self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device='cuda')
-        self.whispermodel = whisper.load_model(name="small", device="cuda", download_root="speechRecognition/model", in_memory=True)
+        try:
+            # self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device='cuda')
+            self.whispermodel = whisper.load_model(name="tiny", device="cuda", download_root="speechRecognition/model", in_memory=False)
+        except:
+            # self.sttmodel = pipeline("automatic-speech-recognition", model="openai/whisper-medium", device='cpu')
+            self.whispermodel = whisper.load_model(name="tiny", device="cpu", download_root="speechRecognition/model", in_memory=False)
         
         # Preload reference audio
         if reference_audio_path:

@@ -1,5 +1,6 @@
 import asyncio
 from io import BytesIO
+import sys
 from speechRecognition.sr import SpeakerVerification
 from speechRecognition.record import BackgroundAudioRecorder
 from myTTS.simpletts import SimpleTTS
@@ -20,7 +21,7 @@ class ListenToPrompt:
         
     def remove_asterisk_phrases(self, text):
         # Regular expression to match text between two asterisks
-        return re.sub(r"\*\*(.*?)\*\*", "", text)
+        return re.sub(r'\*.*?\*', '', text).strip()
 
 
     def start_listening(self, chat_module, api, filelike):
@@ -45,7 +46,7 @@ class ListenToPrompt:
                                     
                         if "bye" in response.lower() or "end session" in response.lower() or "session terminate" in response.lower():
                             chat_module.save_logs()
-                            return
+                            sys.exit(0)
                     else:
                         print(f"Score: {verify['score']}, Prediction: {verify['pred']}")
                 except Exception as e:

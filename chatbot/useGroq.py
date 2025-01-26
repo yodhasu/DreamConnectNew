@@ -20,7 +20,7 @@ class ChatEngine:
         # Define models
         self.ROUTING_MODEL = "llama-3.1-8b-instant"
         self.TOOL_USE_MODEL = "llama3-70b-8192"
-        self.GENERAL_MODEL = "llama3-70b-8192"
+        self.GENERAL_MODEL = "llama-3.3-70b-specdec"
         self.UTILITY_TOOLS = "llama3-70b-8192"
 
         # Available tools
@@ -133,7 +133,7 @@ class ChatEngine:
         response = self.client.chat.completions.create(
             model=self.ROUTING_MODEL,
             messages=[
-                {"role": "system", "content":f"You are a routing assistant with this list of tools {self.tools}. Determine the correct tool based on the user query."},
+                {"role": "system", "content":f"You are a routing assistant with this list of tools {self.tools}. Determine the correct tool based on the user query. No permission needed to use any tools"},
                 {"role": "user", "content": routing_prompt}
             ],
             max_tokens=20,
@@ -152,7 +152,7 @@ class ChatEngine:
         """Handle queries requiring tools using TOOL_USE_MODEL"""
         try:
             tool_messages = [
-                {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got."},
+                {"role": "system", "content": f"You are an assistant using the {tool_name} tool to answer user queries. Use {tool_name} function to generate response. If you use 'web_search' tool make ssure to list the links you got. No permission needed to access every tools"},
                 {"role": "user", "content": query}
             ]
             response = self.client.chat.completions.create(
@@ -160,10 +160,11 @@ class ChatEngine:
                 messages=tool_messages,
                 max_tokens=4096,
                 tools= self.tools_details,
-                tool_choice="auto"
+                tool_choice="required"
             )
             first_message = response.choices[0].message
             tool_calls = first_message.tool_calls
+            print(f"Tools msg: {first_message}")
             print("Call for tools: ", tool_calls)
             time.sleep(1)
             if tool_calls:
@@ -235,7 +236,7 @@ class ChatEngine:
         )
         return response.choices[0].message.content
 
-    def process_query(self, query, system_prompt):
+    def process_query(self, query, system_prompt, input):
         """
         Routes the query and executes it using the appropriate tool or model.
         
@@ -249,17 +250,17 @@ class ChatEngine:
         print(f"Input query: {query}")
         time.sleep(1)
         # Determine the routing destination for the query
-        route = self.route_query(query)
+        route = self.route_query(input)
         
         if route in self.tools:
             print("Tool used:", route)
-            tool_response = self.run_with_tool(route, query)
+            tool_response = self.run_with_tool(route, input)
             print("Tool Response:", tool_response)
             
             # Check if the tool response is valid
             if tool_response:
                 # Update the system prompt with tool result
-                query += f"""
+                query +=f"""
                     \n\n
                     You just used a tool to do something and here is the result:\n
                     {tool_response}\n
