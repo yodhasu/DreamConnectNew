@@ -20,7 +20,7 @@ class ChatEngine:
         # Define models
         self.ROUTING_MODEL = "llama-3.1-8b-instant"
         self.TOOL_USE_MODEL = "llama3-70b-8192"
-        self.GENERAL_MODEL = "llama-3.3-70b-specdec"
+        self.GENERAL_MODEL = "gemma2-9b-it"
         self.UTILITY_TOOLS = "llama3-70b-8192"
 
         # Available tools

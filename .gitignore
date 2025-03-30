@@ -352,3 +352,9 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# garbage file
+sendToDC/
+debug.py
+code-visualizer/
+live2dviewer-build/node_modules

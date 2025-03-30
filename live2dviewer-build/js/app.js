@@ -33,7 +33,7 @@ document.getElementById('startButton').addEventListener('click', async () => {
             console.log("Message from server:", command);
 
             // Stop previous actions and set neutral expression
-            model.stopMotions();
+            model.stopMotions(); // Stop all running motions
             model.expression('neutral');
             model.motion('neutral');
             model.internalModel.motionManager.expressionManager.restoreExpression();

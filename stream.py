@@ -6,6 +6,7 @@ from speechRecognition.listen import ListenToPrompt
 import threading
 from streamScreen.capsc import streamsc
 
+
 # Load environment variables
 load_dotenv()
 api_key = os.getenv("GROQ_API_KEY")
@@ -20,7 +21,7 @@ input_audio_path = "speechRecognition/recorded.wav"
 # Initialize chatbot
 print("Initialize chat")
 chat = interactiveChat(user=user, bio=userbio, char=char, charnickname=nickname)
-print("Initialize reog")
+print("Initialize speaker recognition")
 recog = spr.Recognizer()
 print("Initialize listen")
 listener = ListenToPrompt(silence_timeout=5)

@@ -26,8 +26,12 @@ class SimpleTTS:
     
     async def createTTS(self, text):
         lang = self.checkLang(text=text)
-        tts = edge_tts.Communicate(text=text, voice=lang, rate="+13%", pitch="+15Hz")
+        tts = edge_tts.Communicate(text=text, voice=lang, rate="+10%", pitch="+13Hz")
         await tts.save(self.audiofile)
+        try:
+            await tts.save(self.audiofile, format="mp3")
+        except:
+            pass
         
         # Convert to PCM format for pygame compatibility
         sound = AudioSegment.from_file(self.audiofile)

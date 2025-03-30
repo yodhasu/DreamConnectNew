@@ -33,6 +33,7 @@ class BackgroundAudioRecorder:
                         channels=1,
                         rate=sample_rate,
                         input=True,
+                        input_device_index=3,
                         frames_per_buffer=chunk_size)
 
         # Initialize variables for storing audio frames and counting consecutive silence
@@ -58,12 +59,17 @@ class BackgroundAudioRecorder:
             else:
                 consecutive_silence_counter = 0
                 started = 1
+                print("started", started)
                 print("silence count:", consecutive_silence_counter)
                 print("Chunk size:", chunk_size)
 
             # Break the loop if consecutive silence reaches the specified duration
             if consecutive_silence_counter >= (max_silence_duration // chunk_size) and started == 1:
                 break
+            elif consecutive_silence_counter >= (max_silence_duration // chunk_size) and started == 0:
+                print("no voice detected, silence counter reset")
+                consecutive_silence_counter = 0
+                continue
             # time.sleep(1)
 
         print("Recording finished.")

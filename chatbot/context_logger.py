@@ -18,8 +18,10 @@ import os
 # nltk.download('words')
 # nltk.download('vader_lexicon')
 
+nltk.download('all')
+
 required_nltk_resources = [
-    'punkt', 'averaged_perceptron_tagger', 'maxent_ne_chunker', 'words', 'vader_lexicon'
+    'punkt', 'averaged_perceptron_tagger', 'maxent_ne_chunker', 'words', 'vader_lexicon', 'punkt_tab', 'averaged_perceptron_tagger_eng'
 ]
 for resource in required_nltk_resources:
     try:

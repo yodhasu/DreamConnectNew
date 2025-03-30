@@ -71,8 +71,8 @@ filelike = None
 context_util = ContextLogger()
 user = "Yodha"
 userbio = "Your creator. Male, 5th semester college student, have pretty good knowledge in machine learning and AI. Loves to watch anime and of course a weeb"
-char = "RIN-207 (Responsive Intelligence Nexus)"
-nickname = "Rin"
+char = "Z.E.N.I.T.H (Zestful Executive Navigator and Intuitive Task Hostess)"
+nickname = "Zen"
 # context = "You are an AI made by me, you live in my laptop. You are aware that you are a digital being. Also I know who you are, no need to introduce yourself to me"
 # chat = interactiveChat(user=user, bio=userbio, char=char, context=context, charnickname=nickname)
 
