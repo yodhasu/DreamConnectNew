@@ -357,4 +357,4 @@ cython_debug/
 sendToDC/
 debug.py
 code-visualizer/
-live2dviewer-build/node_modules
+live2dviewer-build/node_modules/

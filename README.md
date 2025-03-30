@@ -37,15 +37,6 @@ Or, if you use multiple Python versions:
 ```bash
 py --version
 ```
-
-If needed, adjust the `install-all.bat` script to match your Python version:
-
-```bash
-set PYTHON_COMMAND=python
-```
-
-Modify this to `py` if the output of `py --version` matches the Python version you're using.
-
 ---
 
 ## Installation
@@ -57,7 +48,7 @@ Follow these steps to set up **DreamConnect** on your local machine:
 Clone the project to your local machine using Git:
 
 ```bash
-git clone https://github.com/yodhasu/DreamConnect.git
+git clone https://github.com/yodhasu/DreamConnectNew.git
 ```
 
 ### 2. Navigate to the Project Directory
@@ -65,18 +56,22 @@ git clone https://github.com/yodhasu/DreamConnect.git
 Change to the project folder:
 
 ```bash
-cd DreamConnect
+cd DreamConnectNew
 ```
 
-### 3. Run the Setup Script
+### 3. Set Up Virtual Environment with Pipenv
 
-Execute the `install-all.bat` script to install dependencies:
+Ensure Pipenv is installed, then install dependencies:
 
 ```bash
-install-all.bat
+pip install pipenv  # Install Pipenv if not already installed
+pipenv install      # Install dependencies inside a virtual environment
 ```
+To activate the virtual environment, use:
 
-This script will automatically set up the necessary environment for you. If needed, adjust the Python command in the script to match your system configuration.
+```bash
+pipenv shell
+```
 
 ---
 
@@ -163,14 +158,39 @@ Character: *gazing outside* The stars are so bright tonight, aren't they?
 
 ## Text-to-Speech (TTS) Interaction
 
-DreamConnect uses **ElevenLabs** for Text-to-Speech (TTS) functionality. The TTS integration is handled in the `chatbot/voiceCloner/elevenlabs.py` module.
+DreamConnect uses Microsoft Edge TTS for Text-to-Speech (TTS) functionality. The TTS integration is handled in the `SimpleTTS` class within `chatbot/voiceCloner/tts.py`.  
 
-### How to Use TTS:
+### How It Works  
 
-1. **Locate the ElevenLabs TTS Functions**: The relevant code for TTS functionality is within the `elevenlabs.py` file.
-2. **TTS Integration**: This module can be used to convert text to speech, allowing your waifu to speak back to you.
+1. **Language Detection**:  
+   - The system detects the language of the input text using `langdetect`.  
+   - Supported voices include:  
+     - English (US) → en-US-MichelleNeural  
+     - Spanish (Spain) → es-ES-ElviraNeural  
+     - French (France) → fr-FR-DeniseNeural  
+     - German (Germany) → de-DE-KatjaNeural  
+     - Japanese → ja-JP-NanamiNeural  
+     - Chinese (Simplified) → zh-CN-XiaoxiaoNeural  
+   - If the language is not supported, the system defaults to English (US).  
 
-Feel free to contribute by exploring or improving the TTS features as part of the project!
+2. **Generating Speech**:  
+   - The input text is converted into speech using `edge_tts`.  
+   - The output is saved as a `.wav` file.  
+
+3. **Playing the Audio**:  
+   - The system converts the audio to PCM format using `pydub` for better compatibility.  
+   - The generated voice is played using `pygame`.  
+   - The system waits until the audio finishes playing before unloading the file.  
+
+### Example Usage  
+
+from chatbot.voiceCloner.tts import SimpleTTS  
+import asyncio  
+
+tts = SimpleTTS()  
+asyncio.run(tts.createTTS("Hello, how are you?"))  
+
+This will generate speech in English and play it automatically.
 
 ---
 
