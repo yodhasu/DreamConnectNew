@@ -34,40 +34,7 @@ pipenv install
 echo Upgrading pip inside pipenv environment...
 pipenv run python -m pip install pip==23.0.1
 
-:: Step 7: Install dependencies using pipenv
-echo Installing dependencies...
-for %%p in (
-    flask
-    flask-socketio
-    flask-cors
-    transformers
-    nltk
-    requests
-    pygame
-    keyboard
-    python-dotenv
-    speechrecognition
-    ollama
-    langchain
-    langchain_ollama
-    openai
-    tensorflow
-    tf-keras
-    elevenlabs
-    coqui-tts
-    tqdm
-    urlextract
-    gensim
-    jokeapi
-    omegaconf==2.0.6
-    rvc-python
-    numpy==1.26.0
-) do (
-    echo Installing %%p...
-    pipenv install %%p
-)
-
-:: Step 8: Install torch and torchaudio with CUDA support
+:: Step 7: Install torch and torchaudio with CUDA support
 echo Installing torch and torchaudio with CUDA support...
 pipenv install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
