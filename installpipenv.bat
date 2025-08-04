@@ -3,6 +3,16 @@ setlocal enabledelayedexpansion
 
 echo Setting up your Python environment with pipenv...
 
+:: Check for CUDA (CUDA is a must)
+where nvcc >nul 2>&1
+if %errorlevel%==0 (
+    nvcc --version
+) else (
+    echo nvcc not found, cannot determine CUDA version.
+    pause
+    exit /b 1
+)
+
 :: Step 1: Set Python command explicitly for Python 3.10
 set PYTHON_COMMAND=python
 
