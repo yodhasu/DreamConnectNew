@@ -3,6 +3,9 @@
 
 **DreamConnect** is an interactive platform by **Sigmalogy** that lets you connect with your own personalized waifu. Choose between **GPT-4** (via OpenAI API) or **Ollama** for a custom chatbot experience. DreamConnect includes features such as a Live2D character viewer, customizable AI personalities, and more!
 
+# Beta showcase of the product
+[![DreamConnect early version showcase](https://media.licdn.com/dms/image/sync/v2/D5627AQHa-X4ajfybNw/articleshare-shrink_800/B56ZY1WdZCHQAM-/0/1744651802706?e=1754906400&v=beta&t=JfoNqILlp2PjDIFiVvVu6YP0-QXRf2nyA70Qwm8egxs)](https://www.youtube.com/watch?v=MSv4Ru_MNN8)
+
 ## Authors
 
 - [@yodhasu](https://github.com/yodhasu)
