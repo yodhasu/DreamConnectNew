@@ -22,9 +22,9 @@
 
 To run **DreamConnect** locally, make sure you have the following:
 
-- **Python 3.10+** (Ensure it's properly installed)
+- **Python 3.10** (Ensure it's properly installed)
 - **API Key** (Required for Groq or OpenAI integration)
-- **Ollama** (For chat model integration with models like `llama3`, `gpt2`, etc.)
+- **Ollama** (For chat model integration with models like `llama3`, `gpt2`, etc. | Currently inactive.)
 - **CUDA-enabled GPU**
 
 ### Checking Python Version
